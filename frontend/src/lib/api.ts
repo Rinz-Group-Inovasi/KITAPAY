@@ -1,6 +1,6 @@
 import { createClientBrowser } from '@/lib/supabase/client';
 
-export const API_BASE_URL = 'http://localhost:4000/api';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 export const LIVE_MERCHANT_ID = '34df3bc6-371a-4505-ac7e-85376a1f2dca';
 export const SANDBOX_MERCHANT_ID = '253f3e50-7af3-4c64-a60d-6ea55d2c6160';
 
