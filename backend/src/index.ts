@@ -32,22 +32,12 @@ const PORT = process.env.PORT || 4000;
 
 app.use(helmet());
 
-// Restrict CORS in Production, allow specific origins
-const allowedOrigins = process.env.NODE_ENV === 'production' 
-    ? [(process.env.FRONTEND_URL || 'https://kitapay.com')] 
-    : ['http://localhost:3000', 'http://127.0.0.1:3000'];
-
+// Universal CORS
 app.use(cors({
-    origin: function(origin, callback) {
-        if (!origin) return callback(null, true);
-        if (process.env.NODE_ENV !== 'production' && (origin.endsWith('.localhost:3000') || origin.endsWith('.localhost:3001'))) {
-            return callback(null, true);
-        }
-        if (allowedOrigins.indexOf(origin) === -1) {
-            return callback(new Error('CORS_ERROR'), false);
-        }
-        return callback(null, true);
-    }
+    origin: true,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
@@ -75,10 +65,6 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
         ip: req.ip
     });
     
-    if (err.message === 'CORS_ERROR') {
-        return res.status(403).json({ error: 'CORS Error: Origin not allowed' });
-    }
-
     res.status(500).json({ error: 'Internal Server Error' });
 });
 
