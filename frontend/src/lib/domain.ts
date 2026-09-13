@@ -10,6 +10,11 @@ export function getCookieDomain(hostname: string | undefined | null) {
     return undefined;
   }
   
+  if (host.endsWith('.netlify.app') || host.endsWith('.railway.app') || host.endsWith('.vercel.app')) {
+    // These are public suffixes. Browsers will reject cookies set on .netlify.app
+    return undefined;
+  }
+
   const parts = host.split('.');
   if (parts.length >= 2) {
     return `.${parts.slice(-2).join('.')}`;
