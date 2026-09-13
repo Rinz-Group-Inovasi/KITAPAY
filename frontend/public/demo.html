@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Toko Sepatu - KitaPay Snap</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f3f4f6; margin: 0; padding: 0; }
+        .navbar { background-color: white; padding: 1rem 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-weight: 900; font-size: 1.25rem; color: #111827; }
+        .container { max-width: 800px; margin: 3rem auto; background: white; border-radius: 1rem; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+        @media(min-width: 640px) { .container { flex-direction: row; } }
+        .image { width: 100%; background-color: #e5e7eb; display: flex; align-items: center; justify-content: center; padding: 3rem; }
+        .image img { max-width: 100%; border-radius: 0.5rem; mix-blend-mode: multiply; }
+        .details { padding: 2.5rem; flex: 1; }
+        .title { font-size: 1.5rem; font-weight: 800; color: #111827; margin: 0 0 0.5rem 0; }
+        .price { font-size: 1.25rem; font-weight: 600; color: #00DDFD; margin: 0 0 1.5rem 0; }
+        .desc { color: #6b7280; line-height: 1.5; margin-bottom: 2rem; font-size: 0.9rem; }
+        .btn { width: 100%; background-color: #111827; color: white; border: none; padding: 1rem; border-radius: 0.5rem; font-weight: bold; font-size: 1rem; cursor: pointer; transition: background-color 0.2s; }
+        .btn:hover { background-color: #374151; }
+        .btn:disabled { background-color: #9ca3af; cursor: not-allowed; }
+        
+        .success-banner { display: none; background-color: #d1fae5; color: #065f46; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; font-weight: bold; text-align: center; border: 1px solid #a7f3d0; }
+    </style>
+    
+    <!-- Load KitaPay Snap SDK -->
+    <script src="/snap.js"></script>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="logo">Toko Sepatu Budi</div>
+        <div style="color: #6b7280; font-size: 0.9rem;">Demo Integration</div>
+    </div>
+
+    <div class="container">
+        <div class="image">
+            <svg width="150" height="150" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div class="details">
+            <div id="success-banner" class="success-banner">
+                Pembayaran Berhasil Diterima!
+            </div>
+
+            <h1 class="title">Nike Air Max (Dummy)</h1>
+            <p class="price" id="price-display">Rp 100.000</p>
+            <p class="desc">Ini adalah halaman demo untuk mensimulasikan bagaimana merchant mengintegrasikan fitur <b>KitaPay Snap</b> ke dalam website mereka. Klik tombol di bawah untuk mencoba memunculkan popup pembayaran.</p>
+            
+            <div style="margin-bottom: 1.5rem;">
+                <label for="amount-select" style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 600; color: #374151;">Pilih Varian Harga:</label>
+                <select id="amount-select" style="width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #d1d5db; background-color: #f9fafb; font-size: 1rem; color: #111827; cursor: pointer; outline: none;">
+                    <option value="50000">Standar - Rp 50.000</option>
+                    <option value="100000" selected>Premium - Rp 100.000</option>
+                    <option value="250000">Eksklusif - Rp 250.000</option>
+                    <option value="1500000">Kolektor - Rp 1.500.000</option>
+                </select>
+            </div>
+
+            <button id="pay-button" class="btn">Beli Sekarang</button>
+            <p id="loading-text" style="display: none; text-align: center; color: #6b7280; font-size: 0.8rem; margin-top: 1rem;">Membuat transaksi...</p>
+        </div>
+    </div>
+
+    <script>
+        const amountSelect = document.getElementById('amount-select');
+        const priceDisplay = document.getElementById('price-display');
+
+        amountSelect.addEventListener('change', function() {
+            const val = parseInt(this.value);
+            priceDisplay.textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(val);
+        });
+
+        document.getElementById('pay-button').addEventListener('click', async function() {
+            const btn = this;
+            const loadingText = document.getElementById('loading-text');
+            const successBanner = document.getElementById('success-banner');
+            const selectedAmount = parseInt(amountSelect.value);
+            
+            successBanner.style.display = 'none';
+            btn.disabled = true;
+            loadingText.style.display = 'block';
+
+            try {
+                // 1. Merchant backend calls KitaPay API to get a transaction ID
+                // (Here we simulate it directly from frontend for demo purposes)
+                const res = await fetch('http://localhost:4000/api/payments/create?env=sandbox', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        merchantId: '253f3e50-7af3-4c64-a60d-6ea55d2c6160', // Sandbox Test Merchant
+                        amount: selectedAmount,
+                        customerEmail: 'budi@example.com',
+                        customerWhatsapp: '081234567890',
+                        paymentMethod: 'QRIS'
+                    })
+                });
+
+                const data = await res.json();
+                
+                if (!data.success) {
+                    alert('Gagal membuat transaksi: ' + data.error);
+                    return;
+                }
+
+                // 2. Trigger KitaPay Snap with the transaction ID
+                window.kitapay.pay(data.transactionId, {
+                    onSuccess: function(result) {
+                        console.log('Payment success:', result);
+                        successBanner.style.display = 'block';
+                        btn.style.display = 'none'; // Hide button after success
+                    },
+                    onClose: function() {
+                        console.log('Snap popup closed');
+                    }
+                });
+
+            } catch (err) {
+                alert('Terjadi kesalahan koneksi.');
+            } finally {
+                btn.disabled = false;
+                loadingText.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
