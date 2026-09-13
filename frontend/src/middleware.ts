@@ -13,6 +13,7 @@ export async function middleware(request: NextRequest) {
   const hostHeader = request.headers.get('host') || '';
 
   const isLocalhost = hostname.includes('localhost') || hostname.includes('127.0.0.1');
+  const isPreviewDomain = hostname.includes('netlify.app') || hostname.includes('railway.app');
 
   // STRICT LOCALHOST NORMALIZATION:
   // Browsers drop cross-subdomain cookies on localhost. 
@@ -30,7 +31,7 @@ export async function middleware(request: NextRequest) {
   // Intercept OAuth callback redirect from Supabase that falls back to root or login domain
   if (path === '/' && url.searchParams.has('code')) {
     const newUrl = new URL(request.url);
-    if (!isLocalhost && !hostname.startsWith('login.')) {
+    if (!isLocalhost && !isPreviewDomain && !hostname.startsWith('login.')) {
       // In production, force it to the login subdomain where the PKCE cookie was set
       newUrl.host = `login.${hostHeader.replace('app.', '')}`;
     }
@@ -41,7 +42,7 @@ export async function middleware(request: NextRequest) {
   // Redirect main domain -> subdomains
   const isMainDomain = !hostname.startsWith('app.') && !hostname.startsWith('login.') && !hostname.startsWith('api.');
 
-  if (isMainDomain && !isLocalhost) {
+  if (isMainDomain && !isLocalhost && !isPreviewDomain) {
     if (path.startsWith('/dashboard')) {
       const newUrl = new URL(request.url);
       newUrl.host = `app.${hostHeader}`;
