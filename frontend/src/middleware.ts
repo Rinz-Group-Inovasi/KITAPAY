@@ -13,7 +13,11 @@ export async function middleware(request: NextRequest) {
   const hostHeader = request.headers.get('host') || '';
 
   const isLocalhost = hostname.includes('localhost') || hostname.includes('127.0.0.1');
-  const isPreviewDomain = hostname.includes('netlify.app') || hostname.includes('railway.app');
+  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN;
+  
+  // Only enable subdomain redirects if we are on the configured root domain
+  // (e.g. kitapay.com). Preview URLs or unconfigured setups will be treated as single-domain.
+  const isPreviewDomain = !isLocalhost && (!rootDomain || !hostname.endsWith(rootDomain));
 
   // STRICT LOCALHOST NORMALIZATION:
   // Browsers drop cross-subdomain cookies on localhost. 

@@ -10,15 +10,17 @@ export function getCookieDomain(hostname: string | undefined | null) {
     return undefined;
   }
   
-  if (host.endsWith('.netlify.app') || host.endsWith('.railway.app') || host.endsWith('.vercel.app')) {
-    // These are public suffixes. Browsers will reject cookies set on .netlify.app
-    return undefined;
+  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN;
+  
+  // If a root domain is configured and the current host belongs to it,
+  // we can safely set the cookie on the root domain (e.g. .kitapay.com)
+  if (rootDomain && host.endsWith(rootDomain)) {
+    return `.${rootDomain}`;
   }
-
-  const parts = host.split('.');
-  if (parts.length >= 2) {
-    return `.${parts.slice(-2).join('.')}`;
-  }
+  
+  // For all other cases (Vercel, Netlify, Railway, or no root domain configured),
+  // return undefined to use host-only cookies. This prevents issues with public suffixes.
+  return undefined;
   
   return host;
 }
