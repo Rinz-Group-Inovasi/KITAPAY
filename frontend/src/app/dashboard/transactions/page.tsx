@@ -105,7 +105,7 @@ export default function TransactionsPage() {
                       </div>
                     </td>
                     <td className="py-4 px-6 text-sm font-bold text-slate-800">
-                      Rp {new Intl.NumberFormat('id-ID').format(tx.amount)}
+                      Rp {new Intl.NumberFormat('id-ID').format(tx.net_amount || tx.amount)}
                     </td>
                     <td className="py-4 px-6">
                       <span className={cn(

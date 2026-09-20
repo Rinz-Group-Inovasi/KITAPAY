@@ -368,7 +368,7 @@ export default function KYCPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="relative z-1010">
+              <div className="relative">
                 <label className="block text-sm font-bold text-black mb-2">Tempat Berjualan</label>
                 <Listbox value={SALES_CHANNEL_OPTIONS.find(o => o.id === formData.salesChannel) || SALES_CHANNEL_OPTIONS[0]} onChange={(opt: any) => setFormData({...formData, salesChannel: opt.id})} disabled={isFormLocked}>
                   <div className="relative">
@@ -379,7 +379,7 @@ export default function KYCPage() {
                       </span>
                     </Listbox.Button>
                     <Transition as={React.Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
-                      <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm border border-slate-100">
+                      <Listbox.Options className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm border border-slate-100">
                         {SALES_CHANNEL_OPTIONS.map((opt) => (
                           <Listbox.Option key={opt.id} className={({ active }) => `relative cursor-default select-none py-3 pl-10 pr-4 ${active ? 'bg-slate-50 text-slate-900' : 'text-slate-700'}`} value={opt}>
                             {({ selected }) => (

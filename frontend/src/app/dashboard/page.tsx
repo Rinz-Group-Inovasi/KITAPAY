@@ -341,7 +341,7 @@ export default function DashboardPage() {
                       <span className="font-medium text-slate-800 text-sm">{row.external_id}</span>
                     </td>
                     <td className="py-4 px-6 text-sm text-slate-600">{new Date(row.created_at).toLocaleDateString()}</td>
-                    <td className="py-4 px-6 text-sm font-medium text-slate-800">Rp {new Intl.NumberFormat('id-ID').format(row.amount)}</td>
+                    <td className="py-4 px-6 text-sm font-medium text-slate-800">Rp {new Intl.NumberFormat('id-ID').format(row.net_amount || row.amount)}</td>
                     <td className="py-4 px-6">
                       <span className={cn(
                         'text-xs font-semibold px-3 py-1 rounded-full',
