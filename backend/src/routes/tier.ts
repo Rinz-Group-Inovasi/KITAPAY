@@ -80,7 +80,7 @@ router.get('/:merchantId', async (req: Request, res: Response): Promise<any> => 
             usedQuota = requests.filter(req => {
                 const payload = req.payload as any;
                 // Check if it was instant and had 0 fee
-                return payload.payoutType === 'INSTANT_PAID' && payload.fee === 0;
+                return payload.payoutType === 'INSTANT_PAID' && payload.fee === 0 && payload.bankCode !== 'JAGO' && payload.bankCode !== 'ARTOS';
             }).length;
         }
 

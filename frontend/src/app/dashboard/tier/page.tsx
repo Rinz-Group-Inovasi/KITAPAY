@@ -171,9 +171,9 @@ export default function TierPage() {
                <p className="text-sm text-slate-600 leading-relaxed">
                   Sebagai merchant <strong className={currentTheme.text}>{data.tier}</strong>, Anda mendapatkan kuota gratis biaya admin (Rp 2.000) untuk Penarikan Instan ke <strong>semua Bank</strong>!
                </p>
-               <p className="text-xs text-slate-500 mt-2 italic">
-                  *Khusus penarikan ke Bank Jago, jika kuota habis, Anda tetap menikmati diskon 50% (Rp 1.000).
-               </p>
+                <p className="mt-4 text-xs text-slate-500 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                  *Khusus penarikan ke Bank Jago, Anda mendapatkan kuota gratis tanpa batas.
+                </p>
             </div>
 
             <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm mt-2">

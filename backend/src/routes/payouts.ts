@@ -84,45 +84,47 @@ router.post('/request', async (req: Request, res: Response): Promise<any> => {
         let usedFreeQuota = false;
         
         if (payoutType === 'INSTANT_PAID') {
-            const now = new Date();
-            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-            
-            // Count Tx
-            const { count: txCount } = await supabaseAdmin
-                .from('transactions')
-                .select('*', { count: 'exact', head: true })
-                .eq('merchant_id', merchantId)
-                .eq('is_sandbox', isSandbox)
-                .gte('created_at', startOfMonth)
-                .in('status', ['PAID', 'COMPLETED']);
+            if (bankCode === 'JAGO' || bankCode === 'ARTOS') {
+                fee = 0; // Unlimited free quota for Jago!
+            } else {
+                const now = new Date();
+                const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
                 
-            const c = txCount || 0;
-            let maxQuota = 1; // Rookie
-            if (c >= 2000) maxQuota = 15; // Platinum
-            else if (c >= 1000) maxQuota = 10; // Gold
-            else if (c >= 500) maxQuota = 5; // Silver
+                // Count Tx
+                const { count: txCount } = await supabaseAdmin
+                    .from('transactions')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('merchant_id', merchantId)
+                    .eq('is_sandbox', isSandbox)
+                    .gte('created_at', startOfMonth)
+                    .in('status', ['PAID', 'COMPLETED']);
+                    
+                const c = txCount || 0;
+                let maxQuota = 1; // Rookie
+                if (c >= 2000) maxQuota = 15; // Platinum
+                else if (c >= 1000) maxQuota = 10; // Gold
+                else if (c >= 500) maxQuota = 5; // Silver
 
-            // Count Used Quota
-            const { data: requests } = await supabaseAdmin
-                .from('merchant_requests')
-                .select('payload')
-                .eq('merchant_id', merchantId)
-                .eq('request_type', 'WITHDRAWAL')
-                .gte('created_at', startOfMonth);
+                // Count Used Quota
+                const { data: requests } = await supabaseAdmin
+                    .from('merchant_requests')
+                    .select('payload')
+                    .eq('merchant_id', merchantId)
+                    .eq('request_type', 'WITHDRAWAL')
+                    .gte('created_at', startOfMonth);
 
-            let usedQuota = 0;
-            if (requests) {
-                usedQuota = requests.filter(req => {
-                    const p = req.payload as any;
-                    return p.payoutType === 'INSTANT_PAID' && p.fee === 0;
-                }).length;
-            }
+                let usedQuota = 0;
+                if (requests) {
+                    usedQuota = requests.filter(req => {
+                        const p = req.payload as any;
+                        return p.payoutType === 'INSTANT_PAID' && p.fee === 0 && p.bankCode !== 'JAGO' && p.bankCode !== 'ARTOS';
+                    }).length;
+                }
 
-            if (usedQuota < maxQuota) {
-                fee = 0; // Free!
-                usedFreeQuota = true;
-            } else if (bankCode === 'JAGO' || bankCode === 'ARTOS') {
-                fee = 1000; // 50% discount for Jago if no quota
+                if (usedQuota < maxQuota) {
+                    fee = 0; // Free!
+                    usedFreeQuota = true;
+                }
             }
         }
 

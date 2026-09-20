@@ -382,19 +382,22 @@ export default function WithdrawPage() {
                   />
                   {payoutType === 'INSTANT_PAID' && (
                     <div className="mt-2 text-xs text-slate-600">
-                      {tierData?.freeQuota?.remaining > 0 ? (
+                      {selectedAccount?.bankName === 'JAGO' || selectedAccount?.bankName === 'ARTOS' ? (
+                         <div className="bg-[#00DDFD]/10 text-[#00DDFD] p-2 rounded-lg font-bold flex items-center gap-1.5 mb-2 border border-[#00DDFD]/20">
+                            <Lightning weight="fill" />
+                            GRATIS! Penarikan ke Bank Jago bebas biaya tanpa batas.
+                         </div>
+                      ) : tierData?.freeQuota?.remaining > 0 ? (
                          <div className="bg-[#00DDFD]/10 text-[#00DDFD] p-2 rounded-lg font-bold flex items-center gap-1.5 mb-2 border border-[#00DDFD]/20">
                             <Lightning weight="fill" />
                             GRATIS! Anda memiliki sisa {tierData.freeQuota.remaining}x kuota bebas biaya.
                          </div>
-                      ) : selectedAccount?.bankName === 'JAGO' ? (
-                         <p className="text-orange-600 font-medium mb-1">Biaya layanan Rp 1.000 (Diskon 50% khusus Bank Jago)</p>
                       ) : (
                          <p className="text-orange-600 font-medium mb-1">Biaya layanan Rp 2.000 (Otomatis dipotong dari nominal)</p>
                       )}
                       
                       {Number(amount) > 0 && (
-                        <p>Nominal yang akan ditransfer ke rekening: <strong>Rp {new Intl.NumberFormat('id-ID').format(Math.max(0, Number(amount) - (tierData?.freeQuota?.remaining > 0 ? 0 : (selectedAccount?.bankName === 'JAGO' ? 1000 : 2000))))}</strong></p>
+                        <p>Nominal yang akan ditransfer ke rekening: <strong>Rp {new Intl.NumberFormat('id-ID').format(Math.max(0, Number(amount) - (selectedAccount?.bankName === 'JAGO' || selectedAccount?.bankName === 'ARTOS' ? 0 : (tierData?.freeQuota?.remaining > 0 ? 0 : 2000))))}</strong></p>
                       )}
                     </div>
                   )}
