@@ -9,6 +9,9 @@ import { getClientMerchantId, API_BASE_URL, fetcher } from '@/lib/api';
 import { useAuth } from '@/components/AuthProvider';
 import { useEnv } from '@/components/EnvProvider';
 import { PageSkeleton } from '@/components/PageSkeleton';
+import { useToast } from '@/components/ToastProvider';
+import { Menu, Transition } from '@headlessui/react';
+import { Fragment } from 'react';
 
 const cn = (...inputs: (string | undefined | null | false)[]) => twMerge(clsx(inputs));
 
@@ -17,6 +20,8 @@ export default function TransactionsPage() {
   const isSandbox = useEnv();
   const merchantId = user ? getClientMerchantId(user.id) : null;
   const env = isSandbox ? 'sandbox' : 'live';
+  const toast = useToast();
+  const [resendingId, setResendingId] = useState<string | null>(null);
 
   const { data, error } = useSWR(
     merchantId ? `${API_BASE_URL}/merchant/transactions/${merchantId}?env=${env}` : null,
@@ -32,6 +37,26 @@ export default function TransactionsPage() {
       window.dispatchEvent(new Event('envloaded'));
     }
   }, [loading]);
+
+  const handleResendWebhook = async (txId: string) => {
+    if (resendingId) return;
+    setResendingId(txId);
+    try {
+      const res = await fetch(`${API_BASE_URL}/webhooks/resend/${txId}`, {
+        method: 'POST'
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success('Webhook berhasil dikirim ulang');
+      } else {
+        toast.error(`Gagal mengirim ulang webhook: ${data.error || 'Terjadi kesalahan'}`);
+      }
+    } catch {
+      toast.error('Terjadi kesalahan saat menghubungi server');
+    } finally {
+      setResendingId(null);
+    }
+  };
 
   if (loading) {
     return <PageSkeleton />;
@@ -118,9 +143,39 @@ export default function TransactionsPage() {
                       </span>
                     </td>
                     <td className="py-4 px-6 text-right">
-                      <button className="text-slate-400 hover:text-[#00DDFD] transition-colors p-2 rounded-lg hover:bg-slate-100">
-                        <DotsThree weight="bold" className="w-5 h-5" />
-                      </button>
+                      <Menu as="div" className="relative inline-block text-left">
+                        <Menu.Button className="text-slate-400 hover:text-[#00DDFD] transition-colors p-2 rounded-lg hover:bg-slate-100 outline-none focus:ring-2 focus:ring-[#00DDFD]/50">
+                          <DotsThree weight="bold" className="w-5 h-5" />
+                        </Menu.Button>
+                        <Transition
+                          as={Fragment}
+                          enter="transition ease-out duration-100"
+                          enterFrom="transform opacity-0 scale-95"
+                          enterTo="transform opacity-100 scale-100"
+                          leave="transition ease-in duration-75"
+                          leaveFrom="transform opacity-100 scale-100"
+                          leaveTo="transform opacity-0 scale-95"
+                        >
+                          <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10 border border-slate-100">
+                            <div className="p-1.5">
+                              <Menu.Item>
+                                {({ active }) => (
+                                  <button
+                                    onClick={() => handleResendWebhook(tx.id)}
+                                    disabled={resendingId === tx.id}
+                                    className={cn(
+                                      active ? 'bg-slate-50 text-[#00DDFD]' : 'text-slate-700',
+                                      'group flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors disabled:opacity-50'
+                                    )}
+                                  >
+                                    {resendingId === tx.id ? 'Mengirim...' : 'Kirim Ulang Webhook'}
+                                  </button>
+                                )}
+                              </Menu.Item>
+                            </div>
+                          </Menu.Items>
+                        </Transition>
+                      </Menu>
                     </td>
                   </tr>
                 ))
@@ -156,14 +211,49 @@ export default function TransactionsPage() {
                       })}
                     </div>
                   </div>
-                  <span className={cn(
-                    'text-[10px] font-bold px-2.5 py-1 rounded-full',
-                    (tx.status === 'PAID' || tx.status === 'COMPLETED') && 'bg-green-100 text-green-700',
-                    tx.status === 'PENDING' && 'bg-yellow-100 text-yellow-700',
-                    tx.status === 'EXPIRED' && 'bg-red-100 text-red-700'
-                  )}>
-                    {tx.status}
-                  </span>
+                  <div className="flex flex-col items-end gap-2">
+                    <span className={cn(
+                      'text-[10px] font-bold px-2.5 py-1 rounded-full',
+                      (tx.status === 'PAID' || tx.status === 'COMPLETED') && 'bg-green-100 text-green-700',
+                      tx.status === 'PENDING' && 'bg-yellow-100 text-yellow-700',
+                      tx.status === 'EXPIRED' && 'bg-red-100 text-red-700'
+                    )}>
+                      {tx.status}
+                    </span>
+                    <Menu as="div" className="relative inline-block text-left">
+                      <Menu.Button className="text-slate-400 hover:text-[#00DDFD] transition-colors p-1 rounded-lg hover:bg-slate-50 outline-none">
+                        <DotsThree weight="bold" className="w-5 h-5" />
+                      </Menu.Button>
+                      <Transition
+                        as={Fragment}
+                        enter="transition ease-out duration-100"
+                        enterFrom="transform opacity-0 scale-95"
+                        enterTo="transform opacity-100 scale-100"
+                        leave="transition ease-in duration-75"
+                        leaveFrom="transform opacity-100 scale-100"
+                        leaveTo="transform opacity-0 scale-95"
+                      >
+                        <Menu.Items className="absolute right-0 mt-1 w-48 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10 border border-slate-100">
+                          <div className="p-1.5">
+                            <Menu.Item>
+                              {({ active }) => (
+                                <button
+                                  onClick={() => handleResendWebhook(tx.id)}
+                                  disabled={resendingId === tx.id}
+                                  className={cn(
+                                    active ? 'bg-slate-50 text-[#00DDFD]' : 'text-slate-700',
+                                    'group flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors disabled:opacity-50'
+                                  )}
+                                >
+                                  {resendingId === tx.id ? 'Mengirim...' : 'Kirim Ulang Webhook'}
+                                </button>
+                              )}
+                            </Menu.Item>
+                          </div>
+                        </Menu.Items>
+                      </Transition>
+                    </Menu>
+                  </div>
                 </div>
                 
                 <div className="flex items-center justify-between border-t border-slate-50 pt-3">

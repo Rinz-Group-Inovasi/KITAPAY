@@ -6,16 +6,13 @@ const router = Router();
 
 router.post('/pakasir', async (req: Request, res: Response): Promise<any> => {
     try {
-        const signature = req.headers['x-pakasir-signature'] as string;
-        if (!signature) {
-            return res.status(401).json({ error: 'Missing signature' });
-        }
+        const signature = (req.headers['x-pakasir-signature'] as string) || '';
 
         const payload = req.body;
         const provider = new PakasirProvider();
         
         if (!provider.verifyWebhookSignature(payload, signature)) {
-            return res.status(401).json({ error: 'Invalid signature' });
+            return res.status(401).json({ error: 'Invalid payload' });
         }
 
         const { order_id, status } = payload; 
@@ -151,6 +148,69 @@ router.get('/logs/:merchantId', async (req, res) => {
         res.json({ logs });
     } catch (err) {
         res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+router.post('/resend/:transactionId', async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { transactionId } = req.params;
+
+        const { data: tx, error: fetchError } = await supabaseAdmin
+            .from('transactions')
+            .select('*')
+            .eq('id', transactionId)
+            .single();
+
+        if (fetchError || !tx) {
+            return res.status(404).json({ error: 'Transaction not found' });
+        }
+
+        const { data: merchantData } = await supabaseAdmin
+            .from('merchants')
+            .select('webhook_url, sandbox_webhook_url')
+            .eq('id', tx.merchant_id)
+            .single();
+
+        const targetUrl = tx.is_sandbox ? merchantData?.sandbox_webhook_url : merchantData?.webhook_url;
+
+        if (!targetUrl) {
+            return res.status(400).json({ error: 'No webhook URL configured for this merchant' });
+        }
+
+        const forwardPayload = {
+            transactionId: tx.id,
+            externalId: tx.external_id,
+            amount: tx.amount,
+            status: tx.status === 'COMPLETED' || tx.status === 'PAID' ? 'PAID' : (tx.status === 'EXPIRED' ? 'EXPIRED' : tx.status),
+            timestamp: new Date().toISOString(),
+            is_sandbox: tx.is_sandbox,
+            is_resend: true
+        };
+
+        let responseStatus = 0;
+        let responseBody = '';
+        
+        try {
+            const axios = require('axios');
+            const forwardRes = await axios.post(targetUrl, forwardPayload, { timeout: 5000 });
+            responseStatus = forwardRes.status;
+            responseBody = typeof forwardRes.data === 'object' ? JSON.stringify(forwardRes.data) : String(forwardRes.data);
+        } catch (err: any) {
+            responseStatus = err.response?.status || 500;
+            responseBody = err.message;
+        }
+
+        await supabaseAdmin.from('webhook_logs').insert({
+            merchant_id: tx.merchant_id,
+            event_type: 'payment.resend',
+            payload: forwardPayload,
+            response_status: responseStatus,
+            response_body: responseBody
+        });
+
+        return res.status(200).json({ success: true, responseStatus, responseBody });
+    } catch (error: any) {
+        return res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
