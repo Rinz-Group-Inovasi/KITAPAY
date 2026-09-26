@@ -191,7 +191,7 @@ export default function DocsPage() {
               <CodeBlock 
                 language="curl" 
                 title="Base URL" 
-                code={`https://api.kitapay.com/v1`} 
+                code={`https://apikita.rinzgroup.web.id/v1`} 
               />
             </div>
           </section>
@@ -327,7 +327,7 @@ export default function DocsPage() {
                     id: 'curl',
                     label: 'cURL',
                     language: 'curl',
-                    code: `curl -X POST https://api.kitapay.com/v1/payments \\
+                    code: `curl -X POST https://apikita.rinzgroup.web.id/v1/payments \\
   -H "Authorization: Bearer sk_test_your_secret_key" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -343,7 +343,7 @@ export default function DocsPage() {
                     language: 'node',
                     code: `import fetch from 'node-fetch';
 
-const response = await fetch('https://api.kitapay.com/v1/payments', {
+const response = await fetch('https://apikita.rinzgroup.web.id/v1/payments', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer sk_test_your_secret_key',
@@ -377,6 +377,18 @@ const data = await response.json();`
   }
 }`}
               />
+              <div className="mt-4 text-sm text-slate-600 bg-slate-50 border border-slate-100 p-4 rounded-xl">
+                <h4 className="font-semibold text-slate-900 mb-2">Response Data Types</h4>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li><code>success</code> <span className="text-xs font-mono text-slate-400 mx-2">boolean</span> Indicates if the request was successful.</li>
+                  <li><code>transaction.id</code> <span className="text-xs font-mono text-slate-400 mx-2">string</span> The unique KitaPay transaction identifier.</li>
+                  <li><code>transaction.external_id</code> <span className="text-xs font-mono text-slate-400 mx-2">string</span> Your system's reference ID.</li>
+                  <li><code>transaction.amount</code> <span className="text-xs font-mono text-slate-400 mx-2">integer</span> The payment amount in IDR.</li>
+                  <li><code>transaction.status</code> <span className="text-xs font-mono text-slate-400 mx-2">string</span> Current status (e.g. <code>PENDING</code>, <code>PAID</code>).</li>
+                  <li><code>transaction.qris_string</code> <span className="text-xs font-mono text-slate-400 mx-2">string</span> The raw QRIS string for generating a QR code (if applicable).</li>
+                  <li><code>transaction.expires_at</code> <span className="text-xs font-mono text-slate-400 mx-2">string (ISO 8601)</span> The timestamp when the payment expires.</li>
+                </ul>
+              </div>
             </div>
           </section>
 
@@ -404,14 +416,14 @@ const data = await response.json();`
                 title="Frontend Javascript"
                 code={`// 1. Open Snap UI Popup
 const transactionId = "kp_txn_9a8b7c6d"; // From your backend
-const snapUrl = \`https://app.kitapay.com/snap/\${transactionId}\`;
+const snapUrl = \`https://app.kitapay.rinzgroup.web.id/snap/\${transactionId}\`;
 
 window.open(snapUrl, "KitaPaySnap", "width=400,height=650");
 
 // 2. Listen for completion
 window.addEventListener("message", (event) => {
   // Always verify origin in production
-  if (event.origin !== "https://app.kitapay.com") return;
+  if (event.origin !== "https://app.kitapay.rinzgroup.web.id") return;
 
   try {
     const data = JSON.parse(event.data);

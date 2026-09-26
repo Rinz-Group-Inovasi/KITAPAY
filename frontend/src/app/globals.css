@@ -35,3 +35,45 @@ body {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+@keyframes orbit {
+  from {
+    transform: rotate(var(--orbit-angle, 0deg)) translateX(var(--orbit-radius, 180px)) rotate(calc(-1 * var(--orbit-angle, 0deg)));
+  }
+  to {
+    transform: rotate(calc(var(--orbit-angle, 0deg) + 360deg)) translateX(var(--orbit-radius, 180px)) rotate(calc(-1 * (var(--orbit-angle, 0deg) + 360deg)));
+  }
+}
+
+.animate-orbit {
+  animation: orbit 20s linear infinite;
+}
+
+@keyframes seq-qris {
+  0%, 80% { opacity: 1; transform: scale(1); }
+  90%, 100% { opacity: 0; transform: scale(0.95); }
+}
+
+@keyframes seq-scan {
+  0% { top: 0%; opacity: 0; }
+  10% { opacity: 1; }
+  35% { top: 100%; opacity: 1; }
+  40%, 100% { opacity: 0; top: 100%; }
+}
+
+@keyframes seq-success {
+  0%, 35% { opacity: 0; transform: translateY(20px) scale(0.95); }
+  45%, 80% { opacity: 1; transform: translateY(0) scale(1); }
+  90%, 100% { opacity: 0; transform: translateY(-10px) scale(0.95); }
+}
+
+@keyframes seq-log {
+  0%, 55% { opacity: 0; transform: translateY(20px) scale(0.95); }
+  65%, 80% { opacity: 1; transform: translateY(0) scale(1); }
+  90%, 100% { opacity: 0; transform: translateY(-10px) scale(0.95); }
+}
+
+.animate-seq-qris { animation: seq-qris 8s infinite; }
+.animate-seq-scan { animation: seq-scan 8s infinite; }
+.animate-seq-success { animation: seq-success 8s infinite; }
+.animate-seq-log { animation: seq-log 8s infinite; }

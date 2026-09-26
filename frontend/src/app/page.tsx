@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ArrowRight, Lightning, ShieldCheck, Wallet, ArrowUpRight, Code, TerminalWindow, Key, CheckCircle } from '@phosphor-icons/react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-
+import AnimatedHeroGraphic from '@/components/AnimatedHeroGraphic';
 const cn = (...inputs: (string | undefined | null | false)[]) => twMerge(clsx(inputs));
 
 export default function LandingPage() {
@@ -81,36 +81,8 @@ export default function LandingPage() {
             </div>
 
             {/* Right Abstract Graphic */}
-            <div className="relative hidden lg:block animate-in fade-in slide-in-from-right-8 duration-1000 delay-300 perspective-1000">
-              <div className="relative w-full aspect-square max-w-[500px] mx-auto transform-3d rotate-y-[-10deg] rotate-x-[5deg]">
-                {/* Floating Card 1 */}
-                <div className="absolute top-10 left-10 right-10 bg-white/60 backdrop-blur-xl border border-white/50 rounded-3xl p-6 shadow-2xl shadow-slate-200/50 z-20 animate-float">
-                  <div className="flex justify-between items-center mb-6">
-                    <div className="h-4 w-24 bg-slate-200 rounded-full"></div>
-                    <div className="h-6 w-16 bg-[#00DDFD]/20 text-[#00DDFD] text-xs font-bold rounded-full flex items-center justify-center">QRIS</div>
-                  </div>
-                  <div className="h-10 w-48 bg-slate-100 rounded-lg mb-2"></div>
-                  <div className="h-3 w-32 bg-slate-100 rounded-full"></div>
-                </div>
-
-                {/* Floating Card 2 */}
-                <div className="absolute top-48 left-0 right-20 bg-slate-900 rounded-3xl p-6 shadow-2xl shadow-slate-900/30 z-30 animate-float" style={{ animationDelay: '1s' }}>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">
-                      <ShieldCheck weight="fill" />
-                    </div>
-                    <div className="text-white font-bold">Pembayaran Berhasil</div>
-                  </div>
-                  <div className="text-slate-400 text-sm mb-4">Invoice #INV-293842</div>
-                  <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-green-400 w-full"></div>
-                  </div>
-                </div>
-
-                {/* Decorative Elements */}
-                <div className="absolute top-1/2 -right-10 w-24 h-24 bg-[#00DDFD] rounded-full blur-2xl opacity-20 -z-10 animate-pulse"></div>
-              </div>
-            </div>
+            {/* Right Abstract Graphic (Animated with GSAP) */}
+            <AnimatedHeroGraphic />
             
           </div>
         </div>
@@ -125,42 +97,43 @@ export default function LandingPage() {
             <div className="relative order-2 lg:order-1 h-[400px] sm:h-[500px] flex items-center justify-center">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,theme(colors.slate.100)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(circle_at_center,black,transparent_80%)] opacity-50" />
               
-              {/* Central Hub (KitaPay) */}
-              <div className="relative z-20 w-40 flex items-center justify-center animate-pulse">
-                <img src="/KitaPay Blue Typograph.png" alt="KitaPay" className="w-full h-auto object-contain drop-shadow-xl" />
-              </div>
+              <div className="relative flex items-center justify-center scale-[0.7] sm:scale-100 w-full h-full">
+                {/* Central Hub (KitaPay) */}
+                <div className="relative z-20 w-40 flex items-center justify-center animate-pulse">
+                  <img src="/KitaPay Blue Typograph.png" alt="KitaPay" className="w-full h-auto object-contain drop-shadow-xl" />
+                </div>
 
-              {/* Connecting Nodes */}
-              {/* OVO */}
-              <div className="absolute z-10 w-20 h-20 bg-white rounded-2xl shadow-lg border border-slate-50 flex items-center justify-center -translate-y-32 -translate-x-32 animate-float" style={{ animationDelay: '0.2s' }}>
-                 <img src="/logos/ovo-logo.svg" alt="OVO" className="w-12 h-12 object-contain" />
-              </div>
-              
-              {/* Mandiri */}
-              <div className="absolute z-10 w-20 h-20 bg-white rounded-2xl shadow-lg border border-slate-50 flex items-center justify-center -translate-y-32 translate-x-32 animate-float" style={{ animationDelay: '0.5s' }}>
-                 <img src="/logos/mandiri-logo.svg" alt="Mandiri" className="w-14 h-14 object-contain" />
-              </div>
+                {/* Connecting Nodes */}
+                {/* OVO */}
+                <div className="absolute z-10 w-20 h-20 bg-white rounded-2xl shadow-lg border border-slate-50 flex items-center justify-center animate-orbit" style={{ '--orbit-angle': '0deg', '--orbit-radius': '160px' } as React.CSSProperties}>
+                   <img src="/logos/ovo-logo.svg" alt="OVO" className="w-12 h-12 object-contain" />
+                </div>
+                
+                {/* Mandiri */}
+                <div className="absolute z-10 w-20 h-20 bg-white rounded-2xl shadow-lg border border-slate-50 flex items-center justify-center animate-orbit" style={{ '--orbit-angle': '60deg', '--orbit-radius': '160px' } as React.CSSProperties}>
+                   <img src="/logos/mandiri-logo.svg" alt="Mandiri" className="w-14 h-14 object-contain" />
+                </div>
 
-              {/* DANA */}
-              <div className="absolute z-10 w-20 h-20 bg-white rounded-2xl shadow-lg border border-slate-50 flex items-center justify-center translate-y-32 -translate-x-32 animate-float" style={{ animationDelay: '0.3s' }}>
-                 <img src="/logos/dana-logo.svg" alt="DANA" className="w-12 h-12 object-contain" />
-              </div>
+                {/* DANA */}
+                <div className="absolute z-10 w-20 h-20 bg-white rounded-2xl shadow-lg border border-slate-50 flex items-center justify-center animate-orbit" style={{ '--orbit-angle': '120deg', '--orbit-radius': '160px' } as React.CSSProperties}>
+                   <img src="/logos/dana-logo.svg" alt="DANA" className="w-12 h-12 object-contain" />
+                </div>
 
-              {/* QRIS */}
-              <div className="absolute z-10 w-20 h-20 bg-white rounded-2xl shadow-lg border border-slate-50 flex items-center justify-center translate-y-32 translate-x-32 animate-float" style={{ animationDelay: '0.7s' }}>
-                 <img src="/logos/qris-logo.svg" alt="QRIS" className="w-14 h-14 object-contain" />
-              </div>
+                {/* QRIS */}
+                <div className="absolute z-10 w-20 h-20 bg-white rounded-2xl shadow-lg border border-slate-50 flex items-center justify-center animate-orbit" style={{ '--orbit-angle': '180deg', '--orbit-radius': '160px' } as React.CSSProperties}>
+                   <img src="/logos/qris-logo.svg" alt="QRIS" className="w-14 h-14 object-contain" />
+                </div>
 
-              {/* Bank Jago */}
-              <div className="absolute z-10 w-20 h-20 bg-white rounded-2xl shadow-lg border border-slate-50 flex items-center justify-center -translate-x-44 animate-float" style={{ animationDelay: '0.4s' }}>
-                 <img src="/logos/jago-logo.svg" alt="Bank Jago" className="w-14 h-14 object-contain" />
-              </div>
+                {/* Bank Jago */}
+                <div className="absolute z-10 w-20 h-20 bg-white rounded-2xl shadow-lg border border-slate-50 flex items-center justify-center animate-orbit" style={{ '--orbit-angle': '240deg', '--orbit-radius': '160px' } as React.CSSProperties}>
+                   <img src="/logos/jago-logo.svg" alt="Bank Jago" className="w-14 h-14 object-contain" />
+                </div>
 
-              {/* Bank Transfer (BCA) */}
-              <div className="absolute z-10 w-20 h-20 bg-white rounded-2xl shadow-lg border border-slate-50 flex items-center justify-center translate-x-44 animate-float" style={{ animationDelay: '0.6s' }}>
-                 <img src="/logos/bca-logo.svg" alt="BCA" className="w-12 h-12 object-contain" />
+                {/* Bank Transfer (BCA) */}
+                <div className="absolute z-10 w-20 h-20 bg-white rounded-2xl shadow-lg border border-slate-50 flex items-center justify-center animate-orbit" style={{ '--orbit-angle': '300deg', '--orbit-radius': '160px' } as React.CSSProperties}>
+                   <img src="/logos/bca-logo.svg" alt="BCA" className="w-12 h-12 object-contain" />
+                </div>
               </div>
-
             </div>
 
             {/* Text Content */}
@@ -240,7 +213,7 @@ export default function LandingPage() {
               </div>
               <div className="w-full md:w-1/2 bg-slate-900 rounded-2xl p-6 shadow-2xl transform rotate-2 group-hover:rotate-0 transition-all duration-500 text-xs font-mono text-slate-300 overflow-x-auto">
 <pre><code>{`// Buat Invoice Baru
-const response = await fetch('https://api.kitapay.com/v1/invoices', {
+const response = await fetch('https://apikita.rinzgroup.web.id/v1/invoices', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer sk_live_YOUR_KEY',
@@ -277,7 +250,7 @@ const response = await fetch('https://api.kitapay.com/v1/invoices', {
             </div>
             <div className="bg-slate-50 p-6 md:p-8 rounded-2xl border border-slate-100 shadow-sm hover:border-slate-200 transition-colors">
               <h4 className="text-lg font-bold text-slate-900 mb-2">Apakah KitaPay aman?</h4>
-              <p className="text-slate-600 leading-relaxed">KitaPay dikelola oleh RINZ GROUP INOVASI, yang sudah berbadan hukum. Kami menggunakan layanan Payment Gateway resmi yang sudah berizin BI dan terdaftar di PSE Komdigi.</p>
+              <p className="text-slate-600 leading-relaxed">KitaPay dikelola oleh RINZ GROUP INOVASI. Kami menggunakan layanan Payment Gateway resmi yang sudah berizin BI dan terdaftar di PSE Komdigi.</p>
             </div>
             <div className="bg-slate-50 p-6 md:p-8 rounded-2xl border border-slate-100 shadow-sm hover:border-slate-200 transition-colors">
               <h4 className="text-lg font-bold text-slate-900 mb-2">Apakah ada biaya pendaftaran atau berlangganan?</h4>
@@ -335,9 +308,23 @@ const response = await fetch('https://api.kitapay.com/v1/invoices', {
               <div className="mb-6">
                 <img src="/KitaPay Blue Typograph.png" alt="KitaPay Logo" className="h-6 w-auto object-contain" />
               </div>
-              <p className="text-slate-500 max-w-sm">
+              <p className="text-slate-500 max-w-sm mb-6">
                 Penyedia link pembayaran terpercaya untuk memajukan bisnis UMKM dan Enterprise di seluruh Indonesia.
               </p>
+              <div className="flex flex-col gap-3 text-sm">
+                <div>
+                  <span className="block font-semibold text-slate-700 mb-1">Hubungi Kami</span>
+                  <a href="mailto:kitapay.sayangku@gmail.com" className="text-slate-500 hover:text-[#00DDFD] transition-colors">
+                    kitapay.sayangku@gmail.com
+                  </a>
+                </div>
+                <div>
+                  <span className="block font-semibold text-slate-700 mb-1">Bagian dari</span>
+                  <a href="https://rinzgroup.web.id" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-[#00DDFD] transition-colors font-medium">
+                    Rinz Group Inovasi
+                  </a>
+                </div>
+              </div>
             </div>
             
             <div>

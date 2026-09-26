@@ -19,76 +19,76 @@ export default function PrivacyPolicyPage() {
       </header>
 
       <main className="flex-1 max-w-4xl mx-auto w-full px-6 py-12">
-        <h1 className="text-4xl font-normal text-slate-900 mb-2">Privacy Policy</h1>
+        <h1 className="text-4xl font-normal text-slate-900 mb-2">Kebijakan Privasi</h1>
         <p className="text-sm text-slate-500 mb-8">Diperbarui 24 Aug 2026</p>
 
         <div className="prose prose-slate max-w-none text-[15px] leading-relaxed">
-          <p>At KitaPay, accessible from kitapay.com and app.kitapay.com, one of our main priorities is the privacy of our visitors. This Privacy Policy document contains types of information that is collected and recorded by KitaPay and how we use it.</p>
-          <p>If you have additional questions or require more information about our Privacy Policy, do not hesitate to contact us.</p>
-          <p>This Privacy Policy applies only to our online activities and is valid for visitors to our website with regards to the information that they shared and/or collect in KitaPay. This policy is not applicable to any information collected offline or via channels other than this website.</p>
+          <p>Di KitaPay, yang dapat diakses dari kitapay.rinzgroup.web.id, salah satu prioritas utama kami adalah privasi pengunjung kami. Dokumen Kebijakan Privasi ini berisi jenis informasi yang dikumpulkan dan dicatat oleh KitaPay dan bagaimana kami menggunakannya.</p>
+          <p>Jika Anda memiliki pertanyaan tambahan atau memerlukan informasi lebih lanjut tentang Kebijakan Privasi kami, jangan ragu untuk menghubungi kami.</p>
+          <p>Kebijakan Privasi ini hanya berlaku untuk aktivitas online kami dan berlaku bagi pengunjung situs web kami sehubungan dengan informasi yang mereka bagikan dan/atau kumpulkan di KitaPay. Kebijakan ini tidak berlaku untuk informasi apa pun yang dikumpulkan secara offline atau melalui saluran selain situs web ini.</p>
 
-          <h3 className="text-lg font-bold text-slate-900 mt-8 mb-4">Consent</h3>
-          <p>By using our website, you hereby consent to our Privacy Policy and agree to its terms.</p>
+          <h3 className="text-lg font-bold text-slate-900 mt-8 mb-4">Persetujuan</h3>
+          <p>Dengan menggunakan situs web kami, Anda dengan ini menyetujui Kebijakan Privasi kami dan menyetujui syarat dan ketentuannya.</p>
 
-          <h3 className="text-lg font-bold text-slate-900 mt-8 mb-4">Information we collect</h3>
-          <p>The personal information that you are asked to provide, and the reasons why you are asked to provide it, will be made clear to you at the point we ask you to provide your personal information.</p>
-          <p>If you contact us directly, we may receive additional information about you such as your name, email address, phone number, the contents of the message and/or attachments you may send us, and any other information you may choose to provide.</p>
-          <p>When you register for an Account, we may ask for your contact information, including items such as name, company name, address, email address, and telephone number.</p>
+          <h3 className="text-lg font-bold text-slate-900 mt-8 mb-4">Informasi yang kami kumpulkan</h3>
+          <p>Informasi pribadi yang diminta untuk Anda berikan, dan alasan mengapa Anda diminta untuk memberikannya, akan dijelaskan kepada Anda pada saat kami meminta Anda untuk memberikan informasi pribadi Anda.</p>
+          <p>Jika Anda menghubungi kami secara langsung, kami mungkin menerima informasi tambahan tentang Anda seperti nama Anda, alamat email, nomor telepon, isi pesan dan/atau lampiran yang mungkin Anda kirimkan kepada kami, dan informasi lain apa pun yang mungkin Anda pilih untuk diberikan.</p>
+          <p>Saat Anda mendaftar untuk sebuah Akun, kami mungkin meminta informasi kontak Anda, termasuk nama, nama perusahaan, alamat, alamat email, dan nomor telepon.</p>
 
-          <h3 className="text-lg font-bold text-slate-900 mt-8 mb-4">How we use your information</h3>
-          <p>We use the information we collect in various ways, including to:</p>
+          <h3 className="text-lg font-bold text-slate-900 mt-8 mb-4">Bagaimana kami menggunakan informasi Anda</h3>
+          <p>Kami menggunakan informasi yang kami kumpulkan dengan berbagai cara, termasuk untuk:</p>
           <ul className="list-disc pl-5 space-y-2 mt-2">
-            <li>Provide, operate, and maintain our website</li>
-            <li>Improve, personalize, and expand our website</li>
-            <li>Understand and analyze how you use our website</li>
-            <li>Develop new products, services, features, and functionality</li>
-            <li>Communicate with you, either directly or through one of our partners, including for customer service, to provide you with updates and other information relating to the website, and for marketing and promotional purposes</li>
-            <li>Send you emails</li>
-            <li>Find and prevent fraud</li>
+            <li>Menyediakan, mengoperasikan, dan memelihara situs web kami</li>
+            <li>Meningkatkan, mempersonalisasi, dan memperluas situs web kami</li>
+            <li>Memahami dan menganalisis bagaimana Anda menggunakan situs web kami</li>
+            <li>Mengembangkan produk, layanan, fitur, dan fungsionalitas baru</li>
+            <li>Berkomunikasi dengan Anda, baik secara langsung maupun melalui salah satu mitra kami, termasuk untuk layanan pelanggan, untuk memberi Anda pembaruan dan informasi lain yang berkaitan dengan situs web, dan untuk tujuan pemasaran dan promosi</li>
+            <li>Mengirimkan email kepada Anda</li>
+            <li>Menemukan dan mencegah penipuan</li>
           </ul>
 
-          <h3 className="text-lg font-bold text-slate-900 mt-8 mb-4">Log Files</h3>
-          <p>KitaPay follows a standard procedure of using log files. These files log visitors when they visit websites. All hosting companies do this and a part of hosting services' analytics. The information collected by log files include internet protocol (IP) addresses, browser type, Internet Service Provider (ISP), date and time stamp, referring/exit pages, and possibly the number of clicks. These are not linked to any information that is personally identifiable. The purpose of the information is for analyzing trends, administering the site, tracking users' movement on the website, and gathering demographic information.</p>
+          <h3 className="text-lg font-bold text-slate-900 mt-8 mb-4">File Log</h3>
+          <p>KitaPay mengikuti prosedur standar menggunakan file log. File-file ini mencatat pengunjung saat mereka mengunjungi situs web. Semua perusahaan hosting melakukan ini dan ini adalah bagian dari analisis layanan hosting. Informasi yang dikumpulkan oleh file log meliputi alamat protokol internet (IP), jenis browser, Penyedia Layanan Internet (ISP), stempel tanggal dan waktu, halaman perujuk/keluar, dan mungkin jumlah klik. Informasi ini tidak terkait dengan informasi apa pun yang dapat diidentifikasi secara pribadi. Tujuan informasi ini adalah untuk menganalisis tren, mengelola situs, melacak pergerakan pengguna di situs web, dan mengumpulkan informasi demografis.</p>
 
-          <h3 className="text-lg font-bold text-slate-900 mt-8 mb-4">Advertising Partners Privacy Policies</h3>
-          <p>You may consult this list to find the Privacy Policy for each of the advertising partners of KitaPay.</p>
-          <p>Third-party ad servers or ad networks uses technologies like cookies, JavaScript, or Web Beacons that are used in their respective advertisements and links that appear on KitaPay, which are sent directly to users' browser. They automatically receive your IP address when this occurs. These technologies are used to measure the effectiveness of their advertising campaigns and/or to personalize the advertising content that you see on websites that you visit.</p>
-          <p>Note that KitaPay has no access to or control over these cookies that are used by third-party advertisers.</p>
+          <h3 className="text-lg font-bold text-slate-900 mt-8 mb-4">Kebijakan Privasi Mitra Periklanan</h3>
+          <p>Anda dapat berkonsultasi dengan daftar ini untuk menemukan Kebijakan Privasi dari masing-masing mitra periklanan KitaPay.</p>
+          <p>Server iklan atau jaringan iklan pihak ketiga menggunakan teknologi seperti cookie, JavaScript, atau Web Beacon yang digunakan dalam iklan dan tautan masing-masing yang muncul di KitaPay, yang dikirim langsung ke browser pengguna. Mereka secara otomatis menerima alamat IP Anda ketika ini terjadi. Teknologi ini digunakan untuk mengukur keefektifan kampanye periklanan mereka dan/atau untuk mempersonalisasi konten periklanan yang Anda lihat di situs web yang Anda kunjungi.</p>
+          <p>Perhatikan bahwa KitaPay tidak memiliki akses atau kontrol atas cookie ini yang digunakan oleh pengiklan pihak ketiga.</p>
 
-          <h3 className="text-lg font-bold text-slate-900 mt-8 mb-4">Third Party Privacy Policies</h3>
-          <p>KitaPay's Privacy Policy does not apply to other advertisers or websites. Thus, we are advising you to consult the respective Privacy Policies of these third-party ad servers for more detailed information. It may include their practices and instructions about how to opt-out of certain options.</p>
-          <p>You can choose to disable cookies through your individual browser options. To know more detailed information about cookie management with specific web browsers, it can be found at the browsers' respective websites.</p>
+          <h3 className="text-lg font-bold text-slate-900 mt-8 mb-4">Kebijakan Privasi Pihak Ketiga</h3>
+          <p>Kebijakan Privasi KitaPay tidak berlaku untuk pengiklan atau situs web lain. Karena itu, kami menyarankan Anda untuk berkonsultasi dengan Kebijakan Privasi masing-masing dari server iklan pihak ketiga ini untuk informasi lebih rinci. Ini mungkin mencakup praktik dan instruksi mereka tentang cara menyisih dari opsi tertentu.</p>
+          <p>Anda dapat memilih untuk menonaktifkan cookie melalui opsi browser individual Anda. Untuk mengetahui informasi lebih rinci tentang manajemen cookie dengan browser web tertentu, itu dapat ditemukan di situs web masing-masing browser.</p>
 
-          <h3 className="text-lg font-bold text-slate-900 mt-8 mb-4">CCPA Privacy Rights (Do Not Sell My Personal Information)</h3>
-          <p>Under the CCPA, among other rights, California consumers have the right to:</p>
+          <h3 className="text-lg font-bold text-slate-900 mt-8 mb-4">Hak Privasi CCPA (Jangan Jual Informasi Pribadi Saya)</h3>
+          <p>Berdasarkan CCPA, antara lain hak-hak lain, konsumen California berhak untuk:</p>
           <ul className="list-disc pl-5 space-y-2 mt-2">
-            <li>Request that a business that collects a consumer's personal data disclose the categories and specific pieces of personal data that a business has collected about consumers.</li>
-            <li>Request that a business delete any personal data about the consumer that a business has collected.</li>
-            <li>Request that a business that sells a consumer's personal data, not sell the consumer's personal data.</li>
+            <li>Meminta agar bisnis yang mengumpulkan data pribadi konsumen mengungkapkan kategori dan bagian spesifik dari data pribadi yang telah dikumpulkan bisnis tentang konsumen.</li>
+            <li>Meminta agar bisnis menghapus data pribadi tentang konsumen yang telah dikumpulkan bisnis.</li>
+            <li>Meminta agar bisnis yang menjual data pribadi konsumen, tidak menjual data pribadi konsumen.</li>
           </ul>
-          <p>If you make a request, we have one month to respond to you. If you would like to exercise any of these rights, please contact us.</p>
+          <p>Jika Anda membuat permintaan, kami memiliki waktu satu bulan untuk menanggapi Anda. Jika Anda ingin menggunakan salah satu dari hak-hak ini, silakan hubungi kami.</p>
 
-          <h3 className="text-lg font-bold text-slate-900 mt-8 mb-4">GDPR Data Protection Rights</h3>
-          <p>We would like to make sure you are fully aware of all of your data protection rights. Every user is entitled to the following:</p>
+          <h3 className="text-lg font-bold text-slate-900 mt-8 mb-4">Hak Perlindungan Data GDPR</h3>
+          <p>Kami ingin memastikan bahwa Anda menyadari sepenuhnya semua hak perlindungan data Anda. Setiap pengguna berhak atas hal-hal berikut:</p>
           <ul className="list-disc pl-5 space-y-2 mt-2">
-            <li>The right to access – You have the right to request copies of your personal data. We may charge you a small fee for this service.</li>
-            <li>The right to rectification – You have the right to request that we correct any information you believe is inaccurate. You also have the right to request that we complete the information you believe is incomplete.</li>
-            <li>The right to erasure – You have the right to request that we erase your personal data, under certain conditions.</li>
-            <li>The right to restrict processing – You have the right to request that we restrict the processing of your personal data, under certain conditions.</li>
-            <li>The right to object to processing – You have the right to object to our processing of your personal data, under certain conditions.</li>
-            <li>The right to data portability – You have the right to request that we transfer the data that we have collected to another organization, or directly to you, under certain conditions.</li>
+            <li>Hak akses – Anda berhak meminta salinan data pribadi Anda. Kami mungkin mengenakan biaya kecil untuk layanan ini.</li>
+            <li>Hak pembetulan – Anda berhak meminta agar kami memperbaiki informasi apa pun yang Anda yakini tidak akurat. Anda juga berhak meminta agar kami melengkapi informasi yang Anda yakini tidak lengkap.</li>
+            <li>Hak penghapusan – Anda berhak meminta agar kami menghapus data pribadi Anda, di bawah kondisi tertentu.</li>
+            <li>Hak untuk membatasi pemrosesan – Anda berhak meminta agar kami membatasi pemrosesan data pribadi Anda, di bawah kondisi tertentu.</li>
+            <li>Hak untuk menolak pemrosesan – Anda berhak menolak pemrosesan data pribadi Anda oleh kami, di bawah kondisi tertentu.</li>
+            <li>Hak atas portabilitas data – Anda berhak meminta agar kami mentransfer data yang telah kami kumpulkan ke organisasi lain, atau langsung kepada Anda, di bawah kondisi tertentu.</li>
           </ul>
-          <p>If you make a request, we have one month to respond to you. If you would like to exercise any of these rights, please contact us.</p>
+          <p>Jika Anda membuat permintaan, kami memiliki waktu satu bulan untuk menanggapi Anda. Jika Anda ingin menggunakan salah satu dari hak-hak ini, silakan hubungi kami.</p>
 
-          <h3 className="text-lg font-bold text-slate-900 mt-8 mb-4">Children's Information</h3>
-          <p>Another part of our priority is adding protection for children while using the internet. We encourage parents and guardians to observe, participate in, and/or monitor and guide their online activity.</p>
-          <p>KitaPay does not knowingly collect any Personal Identifiable Information from children under the age of 13. If you think that your child provided this kind of information on our website, we strongly encourage you to contact us immediately and we will do our best efforts to promptly remove such information from our records.</p>
+          <h3 className="text-lg font-bold text-slate-900 mt-8 mb-4">Informasi Anak-anak</h3>
+          <p>Bagian lain dari prioritas kami adalah menambahkan perlindungan untuk anak-anak saat menggunakan internet. Kami mendorong orang tua dan wali untuk mengamati, berpartisipasi dalam, dan/atau memantau dan memandu aktivitas online mereka.</p>
+          <p>KitaPay tidak secara sadar mengumpulkan Informasi Identifikasi Pribadi apa pun dari anak-anak di bawah umur 13 tahun. Jika Anda berpikir bahwa anak Anda memberikan informasi semacam ini di situs web kami, kami sangat menganjurkan Anda untuk segera menghubungi kami dan kami akan melakukan upaya terbaik kami untuk segera menghapus informasi tersebut dari catatan kami.</p>
 
-          <h3 className="text-lg font-bold text-slate-900 mt-8 mb-4">Changes to This Privacy Policy</h3>
-          <p>We may update our Privacy Policy from time to time. Thus, we advise you to review this page periodically for any changes. We will notify you of any changes by posting the new Privacy Policy on this page. These changes are effective immediately, after they are posted on this page.</p>
+          <h3 className="text-lg font-bold text-slate-900 mt-8 mb-4">Perubahan pada Kebijakan Privasi Ini</h3>
+          <p>Kami dapat memperbarui Kebijakan Privasi kami dari waktu ke waktu. Karena itu, kami menyarankan Anda untuk meninjau halaman ini secara berkala untuk setiap perubahan. Kami akan memberi tahu Anda tentang setiap perubahan dengan memposting Kebijakan Privasi baru di halaman ini. Perubahan ini segera berlaku, setelah diposting di halaman ini.</p>
 
-          <h3 className="text-lg font-bold text-slate-900 mt-8 mb-4">Contact Us</h3>
-          <p>If you have any questions or suggestions about our Privacy Policy, do not hesitate to contact us.</p>
+          <h3 className="text-lg font-bold text-slate-900 mt-8 mb-4">Hubungi Kami</h3>
+          <p>Jika Anda memiliki pertanyaan atau saran tentang Kebijakan Privasi kami, jangan ragu untuk menghubungi kami.</p>
         </div>
       </main>
       
