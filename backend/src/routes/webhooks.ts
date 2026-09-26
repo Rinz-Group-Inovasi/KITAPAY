@@ -100,7 +100,7 @@ router.post('/pakasir', async (req: Request, res: Response): Promise<any> => {
             
             try {
                 const axios = require('axios');
-                const forwardRes = await axios.post(targetUrl, forwardPayload, { timeout: 5000 });
+                const forwardRes = await axios.post(targetUrl, forwardPayload, { timeout: 15000 });
                 responseStatus = forwardRes.status;
                 responseBody = typeof forwardRes.data === 'object' ? JSON.stringify(forwardRes.data) : String(forwardRes.data);
             } catch (err: any) {
