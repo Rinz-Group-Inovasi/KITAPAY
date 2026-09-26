@@ -6,6 +6,6 @@
 [build.environment]
   NEXT_PRIVATE_LOCAL_WEBPACK = "true"
   NEXT_PUBLIC_API_URL = "https://kitapay1-production.up.railway.app/api"
-
+  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_SUPABASE_ANON_KEY,NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_API_URL"
 [[plugins]]
   package = "@netlify/plugin-nextjs"
