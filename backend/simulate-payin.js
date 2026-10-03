@@ -35,13 +35,13 @@ async function simulatePayin() {
     const apiKey = process.env.PAKASIR_API_KEY || '3kBuXbdiQEvEz5H2GAQPakgWXDAlaF1x';
     const signature = crypto.createHmac('sha256', apiKey).update(JSON.stringify(payload)).digest('hex');
 
-    console.log("Mengirim webhook simulasi ke http://localhost:4000/api/webhooks/pakasir ...");
+    console.log("Mengirim webhook simulasi ke http://localhost:4000/api/webhooks/kitapay ...");
     
-    const res = await fetch('http://localhost:4000/api/webhooks/pakasir', {
+    const res = await fetch('http://localhost:4000/api/webhooks/kitapay', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'x-pakasir-signature': signature
+            'x-kitapay-signature': signature
         },
         body: JSON.stringify(payload)
     });

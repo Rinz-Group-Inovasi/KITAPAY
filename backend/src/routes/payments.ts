@@ -1,5 +1,5 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { PakasirProvider } from '../payments/PakasirProvider';
+import { KitaPayProvider } from '../payments/KitaPayProvider';
 import { PaymentRequest } from '../payments/types';
 import { supabaseAdmin } from '../supabase';
 import crypto from 'crypto';
@@ -91,7 +91,7 @@ router.post('/create', createPaymentLimiter, async (req: Request, res: Response)
             return res.status(403).json({ error: 'Akun Anda belum terverifikasi (Unverified). Anda tidak dapat menerima pembayaran sebelum menyelesaikan KYC.' });
         }
 
-        const provider = new PakasirProvider();
+        const provider = new KitaPayProvider();
         const chargeFee = validatedBody.chargeFeeToCustomer !== undefined 
             ? validatedBody.chargeFeeToCustomer 
             : (merchant?.charge_fee_to_customer || false);

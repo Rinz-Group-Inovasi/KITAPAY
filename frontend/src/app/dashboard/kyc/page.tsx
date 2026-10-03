@@ -142,7 +142,11 @@ export default function KYCPage() {
       body: data,
     });
     
-    if (!res.ok) throw new Error('Gagal unggah gambar');
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("Upload error details:", errText);
+      throw new Error(`Gagal unggah gambar: ${errText}`);
+    }
     const json = await res.json();
     return json.secure_url;
   };
@@ -174,7 +178,7 @@ export default function KYCPage() {
   };
 
   const submitKycRequest = async () => {
-    if (!user) return;
+    if (!user || updating) return;
     
     // Basic validation
     if (!formData.nik || !formData.fullName || !formData.address) {

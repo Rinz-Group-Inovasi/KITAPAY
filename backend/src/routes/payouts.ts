@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { PakasirProvider } from '../payments/PakasirProvider';
+import { KitaPayProvider } from '../payments/KitaPayProvider';
 import { PayoutRequest } from '../payments/types';
 import { supabaseAdmin } from '../supabase';
 

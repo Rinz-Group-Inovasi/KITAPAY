@@ -5,7 +5,6 @@ import "./globals.css";
 import { ToastProvider } from "@/components/ToastProvider";
 import { ConfirmModalProvider } from "@/components/ConfirmModalProvider";
 import LenisProvider from "@/components/LenisProvider";
-import FloatingSupportButton from "@/components/FloatingSupportButton";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -38,7 +37,6 @@ export default function RootLayout({
           <ToastProvider>
             <ConfirmModalProvider>
               {children}
-              <FloatingSupportButton />
             </ConfirmModalProvider>
           </ToastProvider>
         </LenisProvider>

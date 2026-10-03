@@ -107,7 +107,7 @@ export default function WithdrawPage() {
 
   const handleRequestPayout = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || loading) return;
     
     if (Number(amount) > balance) {
       toast.error('Nominal penarikan melebihi saldo yang tersedia.');

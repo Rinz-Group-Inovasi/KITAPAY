@@ -115,7 +115,26 @@ export default function DashboardPage() {
         paymentMethod: 'QRIS'
       });
       setIsAddFundOpen(false);
-      router.push(`/checkout/${res.transactionId}`);
+      
+      const snapUrl = `/snap/${res.transactionId}`;
+      const snapWindow = window.open(snapUrl, "KitaPaySnap", "width=400,height=650");
+      
+      const listener = (event: MessageEvent) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'KITAPAY_SNAP_SUCCESS') {
+            toast.success('Pembayaran QRIS Berhasil!');
+            mutate();
+            window.removeEventListener('message', listener);
+            if (snapWindow) snapWindow.close();
+          } else if (data.type === 'KITAPAY_SNAP_CLOSE') {
+            window.removeEventListener('message', listener);
+            if (snapWindow) snapWindow.close();
+          }
+        } catch (e) {}
+      };
+      
+      window.addEventListener('message', listener);
     } catch (error: any) {
       toast.error(error.message);
     } finally {

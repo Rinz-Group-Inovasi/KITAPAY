@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { SquaresFour, FileText, Receipt, ChartLineUp, DownloadSimple, Bank, ShieldCheck, BookOpen, Key, User, Star } from '@phosphor-icons/react';
+import { SquaresFour, FileText, Receipt, ChartLineUp, DownloadSimple, Bank, ShieldCheck, BookOpen, Key, User, Star, Headset } from '@phosphor-icons/react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -19,6 +19,7 @@ export const DASHBOARD_LINKS = [
   { name: 'Pengaturan Profil', href: '/dashboard/profile', icon: User },
   { name: 'API Keys', href: '/dashboard/api-keys', icon: Key },
   { name: 'Panduan', href: '/docs', icon: BookOpen },
+  { name: 'Support', href: '/dashboard/support', icon: Headset },
 ];
 
 export function Sidebar({ isSandbox = false }: { isSandbox?: boolean }) {

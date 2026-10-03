@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { Users, FileText, CheckCircle, WarningCircle, ShieldCheck, SignOut, Clock } from '@phosphor-icons/react';
+import { Users, FileText, CheckCircle, WarningCircle, ShieldCheck, SignOut, Clock, Headset } from '@phosphor-icons/react';
 import Link from 'next/link';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -113,6 +113,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               Audit Penarikan
             </Link>
           )}
+          <Link 
+            href="/admin/support" 
+            className={cn(
+              "flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all text-sm mt-4 border border-[#00DDFD]/20 bg-[#00DDFD]/5",
+              pathname === '/admin/support' ? "bg-[#00DDFD] text-slate-900 shadow-sm border-transparent" : "text-[#00c5e3] hover:bg-[#00DDFD]/10"
+            )}
+          >
+            <Headset weight={pathname === '/admin/support' ? "fill" : "regular"} className="w-5 h-5" />
+            Support Tiket
+          </Link>
         </nav>
       </aside>
 

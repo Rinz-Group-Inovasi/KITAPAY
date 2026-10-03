@@ -1,9 +1,60 @@
 import { Router } from 'express';
 import { supabaseAdmin } from '../supabase';
+import { generateKitaPayEmail } from '../utils/emailTemplate';
 
 const router = Router();
 
-// 1. Admin Login (Basic)
+// 1. Admin System Status (Check if claimed)
+router.get('/status', async (req, res) => {
+    try {
+        const { count, error } = await supabaseAdmin
+            .from('admin_users')
+            .select('*', { count: 'exact', head: true });
+            
+        if (error) throw error;
+        
+        return res.status(200).json({ isClaimed: count !== null && count > 0 });
+    } catch (err: any) {
+        console.error('Status check error:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// 1.1 Claim Admin Account
+router.post('/claim', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Email and password are required' });
+        }
+        
+        // Verify no admin exists yet
+        const { count, error: countError } = await supabaseAdmin
+            .from('admin_users')
+            .select('*', { count: 'exact', head: true });
+            
+        if (countError) throw countError;
+        if (count !== null && count > 0) {
+            return res.status(403).json({ error: 'Admin account has already been claimed' });
+        }
+        
+        // Claim it
+        const { data, error: insertError } = await supabaseAdmin
+            .from('admin_users')
+            .insert({ email, password_hash: password })
+            .select('id, email')
+            .single();
+            
+        if (insertError) throw insertError;
+        
+        return res.status(200).json({ success: true, admin: { id: data.id, email: data.email, role: 'SUPER_ADMIN' } });
+    } catch (err: any) {
+        console.error('Admin claim error:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// 1.2 Admin Login (Basic)
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -18,7 +69,9 @@ router.post('/login', async (req, res) => {
         if (error || !data || data.password_hash !== password) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
-        const role = email === 'superadmin@kitapay.com' ? 'SUPER_ADMIN' : 'ADMIN';
+        
+        // First user to claim or designated superadmin email is SUPER_ADMIN
+        const role = 'SUPER_ADMIN'; 
         return res.status(200).json({ success: true, admin: { id: data.id, email: data.email, role } });
     } catch (err: any) {
         console.error('Admin login error:', err);
@@ -177,15 +230,15 @@ router.post('/requests/:id/approve', async (req, res) => {
                 const merchantEmail = request.merchants?.email;
                 if (merchantEmail) {
                     await resend.emails.send({
-                        from: 'Admin Kitapay <noreply@kitapay.com>',
+                        from: 'Admin Kitapay <noreply@rinzgroup.web.id>',
                         to: merchantEmail,
                         subject: 'Verifikasi KYC Kitapay - BERHASIL',
-                        html: `
-                            <h2>Halo ${request.merchants?.business_name || 'Merchant'},</h2>
-                            <p>Selamat! Pengajuan verifikasi KYC Anda telah <strong>Disetujui</strong>.</p>
-                            <p>Fitur Live Mode Anda kini telah aktif. Anda sudah dapat memproses transaksi.</p>
-                            <br/><p>Terima kasih,<br/>Tim Kitapay</p>
-                        `
+                        html: generateKitaPayEmail(
+                            `Halo ${request.merchants?.business_name?.toUpperCase() || 'MERCHANT'},`,
+                            `<p>Selamat! Pengajuan verifikasi KYC Anda telah <strong>Disetujui</strong>.</p>
+                             <p>Fitur Live Mode Anda kini telah aktif. Anda sudah dapat memproses transaksi melalui sistem kami dengan aman.</p>
+                             <p>Silakan kembali ke dashboard untuk memulai.</p>`
+                        )
                     }).catch(e => console.error(e));
                 }
             } else {
@@ -212,14 +265,14 @@ router.post('/requests/:id/approve', async (req, res) => {
                 const merchantEmail = request.merchants?.email;
                 if (merchantEmail) {
                     await resend.emails.send({
-                        from: 'Admin Kitapay <noreply@kitapay.com>',
+                        from: 'Admin Kitapay <noreply@rinzgroup.web.id>',
                         to: merchantEmail,
                         subject: 'Pembaruan Profil Kitapay - BERHASIL',
-                        html: `
-                            <h2>Halo ${payload.businessName || 'Merchant'},</h2>
-                            <p>Pengajuan pembaruan profil Anda telah <strong>Disetujui</strong>.</p>
-                            <br/><p>Terima kasih,<br/>Tim Kitapay</p>
-                        `
+                        html: generateKitaPayEmail(
+                            `Halo ${(payload.businessName || 'MERCHANT').toUpperCase()},`,
+                            `<p>Pengajuan pembaruan profil bisnis Anda telah berhasil <strong>Disetujui</strong>.</p>
+                             <p>Informasi profil Anda kini sudah diperbarui di dalam sistem kami.</p>`
+                        )
                     }).catch(e => console.error(e));
                 }
             } else {
@@ -245,6 +298,30 @@ router.post('/requests/:id/approve', async (req, res) => {
                 .update({ status: 'COMPLETED' })
                 .eq('id', id);
                 
+                // Send email notification
+                const { Resend } = await import('resend');
+                const resendApiKey = process.env.RESEND_API_KEY;
+                if (resendApiKey && resendApiKey !== 're_dummy_key_12345') {
+                    const resend = new Resend(resendApiKey);
+                    const merchantEmail = request.merchants?.email;
+                    if (merchantEmail) {
+                        const amount = updatedPayload.amount || 0;
+                        const bank = updatedPayload.bankCode || 'Bank';
+                        const acc = updatedPayload.accountNumber || '';
+                        
+                        await resend.emails.send({
+                            from: 'Admin Kitapay <noreply@rinzgroup.web.id>',
+                            to: merchantEmail,
+                            subject: 'Penarikan Dana Berhasil - Kitapay',
+                            html: generateKitaPayEmail(
+                                `Halo ${request.merchants?.business_name?.toUpperCase() || 'MERCHANT'},`,
+                                `<p>Rp${amount.toLocaleString('id-ID')} telah berhasil ditarik ke rekening Anda (<strong>${bank} - ${acc}</strong>).</p>
+                                 <p>Kamu dapat melihat detail penarikan lengkap dan bukti transfer kapan saja di rincian riwayat pada dashboard KitaPay.</p>`
+                            )
+                        }).catch(e => console.error(e));
+                    }
+                }
+
             return res.status(200).json({ success: true });
         }
 
@@ -304,17 +381,18 @@ router.post('/requests/:id/reject', async (req, res) => {
                 
                 if (merchantEmail) {
                     await resend.emails.send({
-                        from: 'Admin Kitapay <noreply@kitapay.com>',
+                        from: 'Admin Kitapay <noreply@rinzgroup.web.id>',
                         to: merchantEmail,
                         subject: 'Pemberitahuan Verifikasi KYC Kitapay - DITOLAK',
-                        html: `
-                            <h2>Halo ${merchantName},</h2>
-                            <p>Mohon maaf, pengajuan verifikasi KYC Anda saat ini <strong>Ditolak</strong> oleh sistem kami.</p>
-                            <p><strong>Alasan penolakan:</strong><br/>${notes || 'Dokumen tidak valid atau kurang jelas.'}</p>
-                            <p>Silakan login kembali ke Dashboard Kitapay dan lakukan pengajuan ulang KYC Anda.</p>
-                            <br/>
-                            <p>Terima kasih,<br/>Tim Kitapay</p>
-                        `
+                        html: generateKitaPayEmail(
+                            `Halo ${merchantName.toUpperCase()},`,
+                            `<p>Mohon maaf, pengajuan verifikasi KYC Anda saat ini <strong>Ditolak</strong> oleh sistem kami.</p>
+                             <div style="background-color: #fff3f3; border-left: 4px solid #ff4d4f; padding: 15px; margin: 20px 0;">
+                                <strong>Alasan penolakan:</strong><br/>
+                                ${notes || 'Dokumen tidak valid atau kurang jelas.'}
+                             </div>
+                             <p>Silakan login kembali ke Dashboard Kitapay dan lakukan pengajuan ulang KYC Anda sesuai dengan ketentuan yang berlaku.</p>`
+                        )
                     }).catch(e => console.error('Failed to send email:', e));
                 }
             } else {
@@ -329,16 +407,18 @@ router.post('/requests/:id/reject', async (req, res) => {
                 const merchantName = request.merchants?.business_name || 'Merchant';
                 if (merchantEmail) {
                     await resend.emails.send({
-                        from: 'Admin Kitapay <noreply@kitapay.com>',
+                        from: 'Admin Kitapay <noreply@rinzgroup.web.id>',
                         to: merchantEmail,
                         subject: 'Pembaruan Profil Kitapay - DITOLAK',
-                        html: `
-                            <h2>Halo ${merchantName},</h2>
-                            <p>Mohon maaf, pengajuan pembaruan profil Anda saat ini <strong>Ditolak</strong> oleh sistem kami.</p>
-                            <p><strong>Alasan penolakan:</strong><br/>${notes || 'Ditolak oleh admin.'}</p>
-                            <br/>
-                            <p>Terima kasih,<br/>Tim Kitapay</p>
-                        `
+                        html: generateKitaPayEmail(
+                            `Halo ${merchantName.toUpperCase()},`,
+                            `<p>Mohon maaf, pengajuan pembaruan profil bisnis Anda saat ini <strong>Ditolak</strong> oleh sistem kami.</p>
+                             <div style="background-color: #fff3f3; border-left: 4px solid #ff4d4f; padding: 15px; margin: 20px 0;">
+                                <strong>Alasan penolakan:</strong><br/>
+                                ${notes || 'Ditolak oleh admin.'}
+                             </div>
+                             <p>Silakan login kembali ke Dashboard Kitapay dan lakukan pengajuan ulang pembaruan profil Anda.</p>`
+                        )
                     }).catch(e => console.error('Failed to send email:', e));
                 }
             } else {

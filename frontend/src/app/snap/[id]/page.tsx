@@ -47,19 +47,19 @@ export default function SnapPage() {
   // Send success message to parent window when transaction is PAID
   useEffect(() => {
     if (transaction?.status === 'PAID' || transaction?.status === 'COMPLETED') {
-      if (window.parent) {
-        window.parent.postMessage(JSON.stringify({
-          type: 'KITAPAY_SNAP_SUCCESS',
-          payload: { transactionId: transaction.id, externalId: transaction.external_id }
-        }), '*');
-      }
+      const msg = JSON.stringify({
+        type: 'KITAPAY_SNAP_SUCCESS',
+        payload: { transactionId: transaction.id, externalId: transaction.external_id }
+      });
+      if (window.opener) window.opener.postMessage(msg, '*');
+      if (window.parent && window.parent !== window) window.parent.postMessage(msg, '*');
     }
   }, [transaction?.status]);
 
   const handleClose = () => {
-    if (window.parent) {
-      window.parent.postMessage(JSON.stringify({ type: 'KITAPAY_SNAP_CLOSE' }), '*');
-    }
+    const msg = JSON.stringify({ type: 'KITAPAY_SNAP_CLOSE' });
+    if (window.opener) window.opener.postMessage(msg, '*');
+    if (window.parent && window.parent !== window) window.parent.postMessage(msg, '*');
   };
 
   const handleSimulate = async () => {

@@ -12,6 +12,7 @@ import requestRoutes from './routes/requests';
 import uploadRoutes from './routes/upload';
 import merchantRoutes from './routes/merchant';
 import tierRoutes from './routes/tier';
+import supportRoutes from './routes/support';
 
 dotenv.config();
 
@@ -54,6 +55,7 @@ app.use('/api/requests', requestRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/merchant', merchantRoutes);
 app.use('/api/tier', tierRoutes);
+app.use('/api/support', supportRoutes);
 
 // Centralized Error Handling Middleware
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {

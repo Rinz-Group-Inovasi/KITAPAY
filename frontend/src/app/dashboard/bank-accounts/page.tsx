@@ -21,7 +21,7 @@ interface BankAccount {
   accountName: string;
   accountNumber: string;
   isPrimary: boolean;
-  status: 'VERIFIED' | 'PENDING';
+  status: 'VERIFIED' | 'PENDING' | 'REJECTED';
 }
 
 const BANK_OPTIONS = [
@@ -83,8 +83,12 @@ export default function BankAccountsPage() {
       status: req.status === 'APPROVED' ? 'VERIFIED' : req.status
     }));
 
+    // Sort requestAccounts so the oldest is first, meaning newest will be last and thus overwrite older ones in the Map
+    // requestsData is ordered DESC (newest first), so we reverse it
+    const sortedRequestAccounts = [...requestAccounts].reverse();
+
     // Merge and deduplicate (Request Accounts take precedence as they have real status)
-    const allAccounts = [...historyAccounts, ...requestAccounts];
+    const allAccounts = [...historyAccounts, ...sortedRequestAccounts];
     const uniqueAccounts = Array.from(new Map(allAccounts.map(item => [item.accountNumber, item])).values());
     
     // Ensure at least one VERIFIED account is primary if there are accounts
@@ -109,7 +113,7 @@ export default function BankAccountsPage() {
 
   const handleAddAccount = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || isSubmitting) return;
     const merchantId = getClientMerchantId(user.id);
     
     setIsSubmitting(true);
@@ -134,6 +138,9 @@ export default function BankAccountsPage() {
           setAccountNumber('');
           setAccountName('');
           mutateRequests();
+       } else {
+          const errData = await res.json();
+          alert(errData.error || 'Gagal menyimpan rekening');
        }
     } catch (e) {
        console.error('Failed to submit bank account');
@@ -144,11 +151,25 @@ export default function BankAccountsPage() {
 
   const removeAccount = async (accountNumberToRemove: string) => {
     if (!user) return;
-    // For now, if it's from payout history we can't really remove it easily without a DB table, 
-    // but if it's a request we can mark it as deleted or just ignore it.
-    // For demo purposes, we will just filter it locally (though it'll come back on refresh if from requests)
+    
+    const accountToDelete = accounts.find(a => a.accountNumber === accountNumberToRemove);
+    if (!accountToDelete) return;
+
     const updated = accounts.filter(a => a.accountNumber !== accountNumberToRemove);
     setAccounts(updated);
+
+    const isRequest = requestsData?.requests?.some((r: any) => r.id === accountToDelete.id);
+    if (isRequest) {
+        try {
+            await fetch(`${API_BASE_URL}/requests/${accountToDelete.id}?merchantId=${getClientMerchantId(user.id)}`, {
+                method: 'DELETE'
+            });
+            mutateRequests();
+        } catch (e) {
+            console.error('Failed to delete request', e);
+            mutateRequests();
+        }
+    }
   };
 
   const setPrimary = (accountNumberToPrimary: string) => {
@@ -311,14 +332,18 @@ export default function BankAccountsPage() {
                   <div className="flex items-center space-x-1 mt-0.5">
                     {acc.status === 'VERIFIED' ? (
                       <CheckCircle weight="fill" className="w-4 h-4 text-green-500" />
+                    ) : acc.status === 'REJECTED' ? (
+                      <X weight="bold" className="w-4 h-4 text-red-500" />
                     ) : (
                       <WarningCircle weight="fill" className="w-4 h-4 text-yellow-500" />
                     )}
                     <span className={cn(
                       "text-xs font-medium",
-                      acc.status === 'VERIFIED' ? "text-green-600" : "text-yellow-600"
+                      acc.status === 'VERIFIED' ? "text-green-600" : 
+                      acc.status === 'REJECTED' ? "text-red-600" : "text-yellow-600"
                     )}>
-                      {acc.status === 'VERIFIED' ? 'Terverifikasi' : 'Tertunda'}
+                      {acc.status === 'VERIFIED' ? 'Terverifikasi' : 
+                       acc.status === 'REJECTED' ? 'Ditolak' : 'Tertunda'}
                     </span>
                   </div>
                 </div>

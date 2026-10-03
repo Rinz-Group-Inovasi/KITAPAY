@@ -36,6 +36,7 @@ export default function ProfilePage() {
   const [pendingData, setPendingData] = useState<any>(null);
 
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -94,11 +95,17 @@ export default function ProfilePage() {
       if (requestData?.status === 'APPROVED' && requestData.payload && user) {
         const merchantId = getClientMerchantId(user.id);
         const profileKey = `kitapay_profile_${merchantId}`;
-        const saved = localStorage.getItem(profileKey);
-        const savedProfile = saved ? JSON.parse(saved) : null;
+        const dataKey = `kitapay_profile_${merchantId}_data`;
+        const saved = localStorage.getItem(dataKey) || localStorage.getItem(profileKey);
+        let savedProfile = null;
+        try {
+          if (saved && saved !== 'synced') savedProfile = JSON.parse(saved);
+        } catch (e) {
+          console.error(e);
+        }
         
         if (!savedProfile || savedProfile.businessName !== requestData.payload.businessName || savedProfile.businessType !== requestData.payload.businessType) {
-          localStorage.setItem(profileKey, JSON.stringify(requestData.payload));
+          localStorage.setItem(dataKey, JSON.stringify(requestData.payload));
           setOwnerName(requestData.payload.ownerName || '');
           setBusinessName(requestData.payload.businessName || '');
           setBusinessType(requestData.payload.businessType || 'perorangan');
@@ -110,7 +117,8 @@ export default function ProfilePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || isSubmitting) return;
+    setIsSubmitting(true);
     
     const savedData = localStorage.getItem(`kitapay_profile_${merchantId}_data`);
     let oldProfile = null;
@@ -246,9 +254,22 @@ export default function ProfilePage() {
 
           {!hasPendingEdit && (
             <div className="pt-4 border-t border-slate-100">
-              <button type="submit" className="w-full bg-slate-900 text-white rounded-xl py-4 font-bold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 shadow-sm">
-                 <CheckCircle weight="bold" className="w-5 h-5" />
-                 <span>Ajukan Perubahan Profil</span>
+              <button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="w-full bg-slate-900 text-white rounded-xl py-4 font-bold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                 {isSubmitting ? (
+                   <>
+                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                     Memproses...
+                   </>
+                 ) : (
+                   <>
+                     <CheckCircle weight="bold" className="w-5 h-5" />
+                     <span>Ajukan Perubahan Profil</span>
+                   </>
+                 )}
               </button>
             </div>
           )}

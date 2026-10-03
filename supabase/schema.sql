@@ -66,8 +66,7 @@ CREATE TABLE IF NOT EXISTS admin_users (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Insert default admin (password: admin123)
-INSERT INTO admin_users (email, password_hash) VALUES ('admin@kitapay.com', 'admin123') ON CONFLICT (email) DO NOTHING;
+-- Default admin should be claimed via the application setup flow
 
 -- 5. Merchant Requests Table (KYC & Profile Edits)
 CREATE TABLE IF NOT EXISTS merchant_requests (

@@ -88,11 +88,15 @@ export function Topbar({ initialIsSandbox, kycStatus, defaultName }: TopbarProps
       if (user) {
         const merchantId = getClientMerchantId(user.id);
         const profileKey = `kitapay_profile_${merchantId}`;
-        const saved = localStorage.getItem(profileKey);
-        if (saved) {
-          const p = JSON.parse(saved);
-          if (p.businessName) {
-            setDisplayName(p.businessName);
+        const saved = localStorage.getItem(`kitapay_profile_${merchantId}_data`) || localStorage.getItem(profileKey);
+        if (saved && saved !== 'synced') {
+          try {
+            const p = JSON.parse(saved);
+            if (p.businessName) {
+              setDisplayName(p.businessName);
+            }
+          } catch (e) {
+            console.error('Failed to parse profile data from localStorage', e);
           }
         }
       }

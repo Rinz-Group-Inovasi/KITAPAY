@@ -1,15 +1,15 @@
 import { Router, Request, Response } from 'express';
-import { PakasirProvider } from '../payments/PakasirProvider';
+import { KitaPayProvider } from '../payments/KitaPayProvider';
 import { supabaseAdmin } from '../supabase';
 
 const router = Router();
 
-router.post('/pakasir', async (req: Request, res: Response): Promise<any> => {
+router.post('/kitapay', async (req: Request, res: Response): Promise<any> => {
     try {
-        const signature = (req.headers['x-pakasir-signature'] as string) || '';
+        const signature = (req.headers['x-kitapay-signature'] as string) || '';
 
         const payload = req.body;
-        const provider = new PakasirProvider();
+        const provider = new KitaPayProvider();
         
         if (!provider.verifyWebhookSignature(payload, signature)) {
             return res.status(401).json({ error: 'Invalid payload' });

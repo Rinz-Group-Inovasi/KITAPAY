@@ -34,6 +34,7 @@ export default function AdminDashboard() {
   const requests: RequestData[] = data?.requests || [];
 
   const handleAction = async (requestId: string, action: 'approve' | 'reject') => {
+    if (actionLoading) return;
     const actionText = action === 'approve' ? 'menyetujui' : 'menolak';
     const isConfirmed = await modal.confirm(`Anda yakin ingin ${actionText} pengajuan ini?`);
     if (!isConfirmed) return;

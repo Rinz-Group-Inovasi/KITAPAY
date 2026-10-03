@@ -37,6 +37,23 @@ router.post('/submit', async (req, res) => {
 
         let status = 'PENDING';
         let notes = '';
+        
+        // Prevent duplicate BANK_ACCOUNT_ADD requests
+        if (requestType === 'BANK_ACCOUNT_ADD') {
+            const { data: existingRequests } = await supabaseAdmin
+                .from('merchant_requests')
+                .select('id, payload')
+                .eq('merchant_id', merchantId)
+                .eq('request_type', 'BANK_ACCOUNT_ADD')
+                .eq('status', 'PENDING');
+                
+            if (existingRequests && existingRequests.length > 0) {
+                const duplicate = existingRequests.find(r => r.payload?.accountNumber === payload.accountNumber);
+                if (duplicate) {
+                    return res.status(400).json({ error: 'Rekening ini sedang dalam proses pengajuan.' });
+                }
+            }
+        }
 
         if (requestType === 'KYC') {
             const ktpDoc = payload.documents?.find((d: any) => d.type === 'ktp');
@@ -146,6 +163,34 @@ router.get('/all/:merchantId', async (req, res) => {
             requests: error ? [] : data
         });
     } catch (err) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Delete a request
+router.delete('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { merchantId } = req.query;
+        
+        if (!merchantId) {
+            return res.status(400).json({ error: 'merchantId is required' });
+        }
+        
+        const { error } = await supabaseAdmin
+            .from('merchant_requests')
+            .delete()
+            .eq('id', id)
+            .eq('merchant_id', merchantId);
+            
+        if (error) {
+            console.error('Delete error:', error);
+            return res.status(500).json({ error: 'Failed to delete request' });
+        }
+        
+        res.status(200).json({ success: true });
+    } catch (err) {
+        console.error('Delete request error:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
 });

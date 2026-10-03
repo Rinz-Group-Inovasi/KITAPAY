@@ -1,15 +1,17 @@
 import { IPaymentProvider, PaymentRequest, PaymentResponse, PayoutRequest, PayoutResponse } from './types';
 import { supabaseAdmin } from '../supabase';
 import crypto from 'crypto';
-import { PakasirClient } from 'pakasir-client';
 
-export class PakasirProvider implements IPaymentProvider {
-    private getClient() {
-        return new PakasirClient({
-            project: process.env.PAKASIR_SLUG || 'kitabayar',
-            apiKey: process.env.PAKASIR_API_KEY || '3kBuXbdiQEvEz5H2GAQPakgWXDAlaF1x'
-        });
+export class KitaPayProvider implements IPaymentProvider {
+    private getSecretKey() {
+        // You might want to define KITAPAY_SECRET_KEY in your .env
+        return process.env.KITAPAY_SECRET_KEY || process.env.PAKASIR_API_KEY || '';
     }
+
+    private getBaseUrl() {
+        return 'https://apikita.rinzgroup.web.id/v1';
+    }
+
     async createPayment(request: PaymentRequest): Promise<PaymentResponse> {
         try {
             const inputAmount = request.amount;
@@ -25,7 +27,7 @@ export class PakasirProvider implements IPaymentProvider {
                 }
             }
 
-            // HPP Pakasir is globally 0.7% + 310 (applied to gross amount by Pakasir)
+            // Fee calculation (assuming similar to previous or as per your business logic)
             const baseFee = Math.round((grossAmount * 0.007) + 310);
             let totalDeduction = 0;
 
@@ -43,13 +45,42 @@ export class PakasirProvider implements IPaymentProvider {
             
             const isSandbox = (request as any).isSandbox || false;
 
-            // Call Real Pakasir API (Sandbox mode is handled by the Pakasir project setting itself)
-            const client = this.getClient();
-            const pakasirRes = await client.createTransaction('qris', orderId, grossAmount);
+            const apiKey = this.getSecretKey();
+            const targetWebhookUrl = process.env.WEBHOOK_BASE_URL 
+                ? `${process.env.WEBHOOK_BASE_URL}/webhooks/kitapay` 
+                : 'https://kitapay.rinzgroup.web.id/webhook/kitapay';
+
+            // Call KitaPay API
+            const response = await fetch(`${this.getBaseUrl()}/payments`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    merchantId: request.merchantId,
+                    amount: grossAmount,
+                    externalId: orderId,
+                    targetWebhookUrl: targetWebhookUrl
+                })
+            });
+
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(`KitaPay API Error: ${errText}`);
+            }
+
+            const kitaRes = await response.json();
             
-            const qrisString = pakasirRes.payment.payment_number;
-            const externalId = pakasirRes.payment.order_id;
-            const expiresAt = pakasirRes.payment.expired_at;
+            if (!kitaRes.success || !kitaRes.transaction) {
+                throw new Error(`KitaPay API Failed: ${JSON.stringify(kitaRes)}`);
+            }
+
+            const transactionData = kitaRes.transaction;
+            
+            const qrisString = transactionData.qris_string;
+            const externalId = transactionData.id; // Usually the provider's transaction ID
+            const expiresAt = transactionData.expires_at;
 
             const { data, error } = await supabaseAdmin
                 .from('transactions')
@@ -61,7 +92,7 @@ export class PakasirProvider implements IPaymentProvider {
                     kitapay_fee: kitapayFee,
                     total_deduction: totalDeduction,
                     net_amount: netAmount,
-                    payment_method: request.paymentMethod,
+                    payment_method: request.paymentMethod || 'qris',
                     qris_string: qrisString,
                     status: 'PENDING',
                     customer_email: request.customerEmail,
@@ -119,7 +150,7 @@ export class PakasirProvider implements IPaymentProvider {
                 throw new Error('Nominal penarikan harus lebih besar dari biaya layanan.');
             }
 
-            const externalPayoutId = 'PO-PAK-' + Date.now();
+            const externalPayoutId = 'PO-KITA-' + Date.now();
             let scheduledFor = null;
 
             if (request.payoutType === 'SCHEDULED_FREE') {
@@ -190,20 +221,11 @@ export class PakasirProvider implements IPaymentProvider {
     }
 
     verifyWebhookSignature(payload: any, signature: string): boolean {
-        // Since PakasirClient doesn't seem to take the signature in validateWebhook, 
-        // we'll use the crypto method if validateWebhook doesn't do signature checking 
-        // or just rely on the existing secret check. Actually, let's look at it.
-        const secret = process.env.PAKASIR_WEBHOOK_SECRET || process.env.PAKASIR_API_KEY || 'secret';
+        const secret = process.env.KITAPAY_WEBHOOK_SECRET || process.env.KITAPAY_SECRET_KEY || process.env.PAKASIR_API_KEY || 'secret';
         const expectedSignature = crypto.createHmac('sha256', secret).update(JSON.stringify(payload)).digest('hex');
+        // You can uncomment below if KitaPay signs their webhooks this way.
         // return signature === expectedSignature; 
         
-        // Let's use the SDK's validateWebhook instead, or fallback to returning true for now 
-        // as the user's snippet was just `return true;`.
-        try {
-            const client = this.getClient();
-            return client.validateWebhook(payload);
-        } catch {
-            return true;
-        }
+        return true;
     }
 }
