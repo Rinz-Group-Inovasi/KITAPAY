@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { API_BASE_URL, fetcher } from '@/lib/api';
 import useSWR from 'swr';
-import { CircleNotch, MagnifyingGlass, CheckCircle, WarningCircle, UserCircle, Globe, Buildings, Money } from '@phosphor-icons/react';
+import { CircleNotch, MagnifyingGlass, CheckCircle, WarningCircle, UserCircle, Globe, Buildings, Money, SignIn } from '@phosphor-icons/react';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 
@@ -33,6 +33,23 @@ export default function AdminMerchantsPage() {
   const { data, isLoading } = useSWR(`${API_BASE_URL}/admin/merchants`, fetcher, {
     refreshInterval: 15000
   });
+
+  const handleImpersonate = async (id: string) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/merchants/${id}/impersonate`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (data.link) {
+        window.location.href = data.link;
+      } else {
+        alert(data.error || 'Gagal login sebagai merchant');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Terjadi kesalahan saat impersonate');
+    }
+  };
 
   const merchants: MerchantData[] = data?.merchants || [];
 
@@ -98,6 +115,14 @@ export default function AdminMerchantsPage() {
                       </h2>
                       <p className="text-slate-500 font-medium">{merchant.email}</p>
                     </div>
+                    <button
+                      onClick={() => handleImpersonate(merchant.id)}
+                      className="flex items-center gap-1.5 text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors"
+                      title="Login sebagai Merchant ini"
+                    >
+                      <SignIn className="w-4 h-4" />
+                      <span>Impersonate</span>
+                    </button>
                   </div>
                   
                   <div className="flex items-center gap-4 text-sm">

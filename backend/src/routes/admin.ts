@@ -195,6 +195,41 @@ router.get('/merchants', async (req, res) => {
     }
 });
 
+// 2.6 Impersonate Merchant
+router.post('/merchants/:id/impersonate', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // 1. Get the merchant's email
+        const { data: merchant, error: mError } = await supabaseAdmin
+            .from('merchants')
+            .select('email')
+            .eq('id', id)
+            .single();
+
+        if (mError || !merchant) {
+            return res.status(404).json({ error: 'Merchant not found' });
+        }
+
+        // 2. Generate magic link using Supabase Admin
+        const { data, error } = await supabaseAdmin.auth.admin.generateLink({
+            type: 'magiclink',
+            email: merchant.email,
+        });
+
+        if (error) {
+            console.error('Generate link error:', error);
+            return res.status(500).json({ error: 'Failed to generate impersonation link' });
+        }
+
+        // 3. Return the action_link to the frontend
+        return res.status(200).json({ link: data.properties.action_link });
+    } catch (err: any) {
+        console.error('Impersonate error:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 // 3. Approve Request
 router.post('/requests/:id/approve', async (req, res) => {
     try {

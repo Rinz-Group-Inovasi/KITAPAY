@@ -9,7 +9,7 @@ export class KitaPayProvider implements IPaymentProvider {
     }
 
     private getBaseUrl() {
-        return 'https://apikita.rinzgroup.web.id/v1';
+        return 'https://app.pakasir.com/api';
     }
 
     async createPayment(request: PaymentRequest): Promise<PaymentResponse> {
@@ -50,37 +50,36 @@ export class KitaPayProvider implements IPaymentProvider {
                 ? `${process.env.WEBHOOK_BASE_URL}/webhooks/kitapay` 
                 : 'https://kitapay.rinzgroup.web.id/webhook/kitapay';
 
-            // Call KitaPay API
-            const response = await fetch(`${this.getBaseUrl()}/payments`, {
+            const projectSlug = process.env.PAKASIR_SLUG || 'kita-atur';
+
+            // Call Pakasir API as upstream (v2)
+            const response = await fetch(`${this.getBaseUrl()}/v2/create-transaction/${projectSlug}/${orderId}`, {
                 method: 'POST',
                 headers: {
+                    'Accept': 'application/json',
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`
+                    'X-Api-Key': apiKey
                 },
                 body: JSON.stringify({
-                    merchantId: request.merchantId,
-                    amount: grossAmount,
-                    externalId: orderId,
-                    targetWebhookUrl: targetWebhookUrl
+                    method: 'qris',
+                    amount: grossAmount
                 })
             });
 
             if (!response.ok) {
                 const errText = await response.text();
-                throw new Error(`KitaPay API Error: ${errText}`);
+                throw new Error(`Upstream API Error: ${errText}`);
             }
 
-            const kitaRes = await response.json();
+            const transactionData: any = await response.json();
             
-            if (!kitaRes.success || !kitaRes.transaction) {
-                throw new Error(`KitaPay API Failed: ${JSON.stringify(kitaRes)}`);
+            if (!transactionData || !transactionData.qr_string) {
+                throw new Error(`Upstream API Failed: ${JSON.stringify(transactionData)}`);
             }
-
-            const transactionData = kitaRes.transaction;
             
-            const qrisString = transactionData.qris_string;
-            const externalId = transactionData.id; // Usually the provider's transaction ID
-            const expiresAt = transactionData.expires_at;
+            const qrisString = transactionData.qr_string;
+            const externalId = transactionData.order_id || orderId;
+            const expiresAt = transactionData.expired_at || new Date(Date.now() + 60 * 60 * 1000).toISOString();
 
             const { data, error } = await supabaseAdmin
                 .from('transactions')
