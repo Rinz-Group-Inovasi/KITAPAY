@@ -38,6 +38,12 @@ export default function AdminMerchantsPage() {
     try {
       const res = await fetch(`${API_BASE_URL}/admin/merchants/${id}/impersonate`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          redirectTo: window.location.origin + '/dashboard',
+        }),
       });
       const data = await res.json();
       if (data.link) {

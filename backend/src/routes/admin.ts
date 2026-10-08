@@ -199,6 +199,7 @@ router.get('/merchants', async (req, res) => {
 router.post('/merchants/:id/impersonate', async (req, res) => {
     try {
         const { id } = req.params;
+        const { redirectTo } = req.body || {};
         
         // 1. Get the merchant's email
         const { data: merchant, error: mError } = await supabaseAdmin
@@ -215,6 +216,7 @@ router.post('/merchants/:id/impersonate', async (req, res) => {
         const { data, error } = await supabaseAdmin.auth.admin.generateLink({
             type: 'magiclink',
             email: merchant.email,
+            options: redirectTo ? { redirectTo } : undefined,
         });
 
         if (error) {
