@@ -1,14 +1,37 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createClientBrowser } from '@/lib/supabase/client';
 import { useToast } from '@/components/ToastProvider';
 import { CircleNotch } from '@phosphor-icons/react';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const supabase = createClientBrowser();
   const toast = useToast();
+  const router = useRouter();
+
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' || session) {
+        window.location.href = '/dashboard';
+      }
+    });
+
+    // Also check initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        window.location.href = '/dashboard';
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [supabase, router]);
 
   const handleGoogleLogin = async () => {
     setLoading(true);
