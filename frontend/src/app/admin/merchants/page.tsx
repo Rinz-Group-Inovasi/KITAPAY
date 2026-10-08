@@ -5,6 +5,7 @@ import { API_BASE_URL, fetcher } from '@/lib/api';
 import useSWR from 'swr';
 import { CircleNotch, MagnifyingGlass, CheckCircle, WarningCircle, UserCircle, Globe, Buildings, Money, SignIn } from '@phosphor-icons/react';
 import { format } from 'date-fns';
+import { supabase } from '@/lib/supabase/client';
 import { id } from 'date-fns/locale';
 
 interface MerchantKycData {
@@ -47,6 +48,7 @@ export default function AdminMerchantsPage() {
       });
       const data = await res.json();
       if (data.link) {
+        await supabase.auth.signOut();
         window.location.href = data.link;
       } else {
         alert(data.error || 'Gagal login sebagai merchant');

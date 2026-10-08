@@ -34,8 +34,16 @@ export function AuthProvider({
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
+      const isNewUser = session?.user?.id !== user?.id;
       setUser(session?.user ?? null);
       setLoading(false);
+      
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+        if (isNewUser) {
+          router.refresh();
+        }
+      }
+      
       if (event === 'SIGNED_OUT') {
         if (typeof window !== 'undefined') {
           const host = window.location.host;
