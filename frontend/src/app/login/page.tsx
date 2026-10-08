@@ -13,6 +13,23 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
+    // 1. Manually handle implicit flow hash (from admin Impersonate magic links)
+    const hash = window.location.hash;
+    if (hash && hash.includes('access_token=')) {
+      const params = new URLSearchParams(hash.substring(1));
+      const access_token = params.get('access_token');
+      const refresh_token = params.get('refresh_token');
+      if (access_token && refresh_token) {
+        supabase.auth.setSession({ access_token, refresh_token }).then(({ error }) => {
+          if (!error) {
+            window.location.href = '/dashboard';
+          }
+        });
+        return; // skip the rest to prevent race conditions
+      }
+    }
+
+    // 2. Normal auth state change listener
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
@@ -21,7 +38,7 @@ export default function LoginPage() {
       }
     });
 
-    // Also check initial session
+    // 3. Also check initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         window.location.href = '/dashboard';
@@ -29,7 +46,7 @@ export default function LoginPage() {
     });
 
     return () => {
-      subscription.unsubscribe();
+      subscription?.unsubscribe();
     };
   }, [supabase, router]);
 
