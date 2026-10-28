@@ -81,7 +81,7 @@ export default function AnimatedHeroGraphic() {
     <div className="relative block mt-12 lg:mt-0 animate-in fade-in slide-in-from-right-8 duration-1000 delay-300 perspective-1000">
       <div 
         ref={containerRef}
-        className="relative w-full aspect-square max-w-[320px] sm:max-w-[400px] lg:max-w-[500px] mx-auto transform-3d rotate-y-[-10deg] rotate-x-[5deg]"
+        className="relative w-full aspect-square max-w-[320px] sm:max-w-100 lg:max-w-125 mx-auto transform-3d rotate-y-[-10deg] rotate-x-[5deg]"
       >
         {/* QRIS Card (Step 1) */}
         <div 

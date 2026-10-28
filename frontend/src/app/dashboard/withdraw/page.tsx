@@ -383,22 +383,32 @@ export default function WithdrawPage() {
                   {payoutType === 'INSTANT_PAID' && (
                     <div className="mt-2 text-xs text-slate-600">
                       {selectedAccount?.bankName === 'JAGO' || selectedAccount?.bankName === 'ARTOS' ? (
-                         <div className="bg-[#00DDFD]/10 text-[#00DDFD] p-2 rounded-lg font-bold flex items-center gap-1.5 mb-2 border border-[#00DDFD]/20">
-                            <Lightning weight="fill" />
-                            GRATIS! Penarikan ke Bank Jago bebas biaya tanpa batas.
-                         </div>
-                      ) : tierData?.freeQuota?.remaining > 0 ? (
-                         <div className="bg-[#00DDFD]/10 text-[#00DDFD] p-2 rounded-lg font-bold flex items-center gap-1.5 mb-2 border border-[#00DDFD]/20">
-                            <Lightning weight="fill" />
-                            GRATIS! Anda memiliki sisa {tierData.freeQuota.remaining}x kuota bebas biaya.
-                         </div>
+                        (tierData?.jagoQuota?.remaining ?? 3) > 0 ? (
+                          <div className="bg-emerald-50 text-emerald-700 p-2.5 rounded-lg font-bold flex items-center gap-1.5 mb-2 border border-emerald-200">
+                            <Lightning weight="fill" className="text-emerald-500" />
+                            GRATIS! Sisa kuota bebas biaya Bank Jago: {tierData?.jagoQuota?.remaining ?? 3}x dari 3x bulan ini.
+                          </div>
+                        ) : (
+                          <p className="text-orange-600 font-medium mb-1">Kuota gratis Bank Jago bulan ini telah habis (3/3). Biaya layanan Rp 2.000.</p>
+                        )
+                      ) : (tierData?.freeQuota?.remaining ?? 0) > 0 ? (
+                        <div className="bg-[#00DDFD]/10 text-[#00DDFD] p-2.5 rounded-lg font-bold flex items-center gap-1.5 mb-2 border border-[#00DDFD]/20">
+                          <Lightning weight="fill" />
+                          GRATIS! Anda memiliki sisa {tierData.freeQuota.remaining}x kuota bebas biaya.
+                        </div>
                       ) : (
-                         <p className="text-orange-600 font-medium mb-1">Biaya layanan Rp 2.000 (Otomatis dipotong dari nominal)</p>
+                        <p className="text-orange-600 font-medium mb-1">Biaya layanan Rp 2.000 (Otomatis dipotong dari nominal)</p>
                       )}
                       
-                      {Number(amount) > 0 && (
-                        <p>Nominal yang akan ditransfer ke rekening: <strong>Rp {new Intl.NumberFormat('id-ID').format(Math.max(0, Number(amount) - (selectedAccount?.bankName === 'JAGO' || selectedAccount?.bankName === 'ARTOS' ? 0 : (tierData?.freeQuota?.remaining > 0 ? 0 : 2000))))}</strong></p>
-                      )}
+                      {Number(amount) > 0 && (() => {
+                        const isJago = selectedAccount?.bankName === 'JAGO' || selectedAccount?.bankName === 'ARTOS';
+                        const feeAmt = isJago 
+                          ? ((tierData?.jagoQuota?.remaining ?? 3) > 0 ? 0 : 2000)
+                          : ((tierData?.freeQuota?.remaining ?? 0) > 0 ? 0 : 2000);
+                        return (
+                          <p>Nominal yang akan ditransfer ke rekening: <strong>Rp {new Intl.NumberFormat('id-ID').format(Math.max(0, Number(amount) - feeAmt))}</strong></p>
+                        );
+                      })()}
                     </div>
                   )}
                   {Number(amount) > balance && (

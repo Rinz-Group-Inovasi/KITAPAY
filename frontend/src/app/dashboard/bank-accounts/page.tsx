@@ -203,7 +203,7 @@ export default function BankAccountsPage() {
       </div>
 
       {isAddOpen && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-1000 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl p-6 sm:p-8 animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-start mb-6 sticky top-0 bg-white z-10 pb-2">
               <h2 className="text-xl font-bold flex items-center gap-2 text-slate-800">
@@ -236,7 +236,7 @@ export default function BankAccountsPage() {
                            leaveFrom="opacity-100"
                            leaveTo="opacity-0"
                          >
-                           <Listbox.Options className="absolute z-[2000] mt-2 max-h-60 w-full overflow-auto rounded-xl bg-white py-2 text-base shadow-2xl ring-1 ring-black/5 focus:outline-none sm:text-sm">
+                           <Listbox.Options className="absolute z-2000 mt-2 max-h-60 w-full overflow-auto rounded-xl bg-white py-2 text-base shadow-2xl ring-1 ring-black/5 focus:outline-none sm:text-sm">
                              {BANK_OPTIONS.map((bank, bankIdx) => (
                                <Listbox.Option
                                  key={bankIdx}

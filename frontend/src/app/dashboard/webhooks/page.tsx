@@ -236,7 +236,7 @@ export default function WebhooksPage() {
                 <div className="flex items-center justify-between border-t border-slate-50 pt-3">
                   <div className="text-xs text-slate-500 flex items-center gap-1.5 truncate">
                     <Link weight="bold" className="w-3.5 h-3.5 shrink-0" />
-                    <span className="truncate max-w-[150px]">{isSandbox ? sandboxWebhookUrl : webhookUrl}</span>
+                    <span className="truncate max-w-37.5">{isSandbox ? sandboxWebhookUrl : webhookUrl}</span>
                   </div>
                   <div className={cn(
                     "text-xs font-bold px-2 py-1 rounded-md",

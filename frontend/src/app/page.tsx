@@ -9,18 +9,47 @@ import AnimatedHeroGraphic from '@/components/AnimatedHeroGraphic';
 const cn = (...inputs: (string | undefined | null | false)[]) => twMerge(clsx(inputs));
 
 export default function LandingPage() {
+  const [scrolled, setScrolled] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <div className="min-h-screen bg-slate-50 selection:bg-[#00DDFD] selection:text-slate-900 font-sans overflow-hidden">
       {/* Navbar */}
-      <nav className="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-lg border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <img src="/KitaPay Blue Typograph.png" alt="KitaPay Logo" className="h-6 w-auto object-contain" />
-          </div>
+      <nav 
+        className={cn(
+          'fixed top-0 inset-x-0 z-50 transition-all duration-300',
+          scrolled 
+            ? 'bg-white/90 backdrop-blur-lg border-b border-slate-100 shadow-xs' 
+            : 'bg-white/50 backdrop-blur-sm border-b border-transparent'
+        )}
+      >
+        <div 
+          className={cn(
+            'max-w-7xl mx-auto px-6 flex items-center justify-between transition-all duration-300',
+            scrolled ? 'h-16' : 'h-24 sm:h-28'
+          )}
+        >
+          <Link href="/" className="flex items-center gap-2 group">
+            <img 
+              src="/KitaPay Emblem.png" 
+              alt="KitaPay Emblem" 
+              className={cn(
+                'w-auto object-contain transition-all duration-300 drop-shadow-xs group-hover:scale-105',
+                scrolled ? 'h-9 sm:h-10' : 'h-14 sm:h-18'
+              )} 
+            />
+          </Link>
           
           <div className="hidden md:flex items-center gap-8 font-medium text-sm text-slate-600">
             <Link href="#fitur" className="hover:text-slate-900 transition-colors">Fitur</Link>
-            <Link href="#ekosistem" className="hover:text-slate-900 transition-colors">Metode Pembayaran</Link>
             <Link href="/pricing" className="hover:text-slate-900 transition-colors">Harga</Link>
             <Link href="/docs" className="hover:text-slate-900 transition-colors">Dokumentasi API</Link>
           </div>
@@ -45,8 +74,8 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="relative pt-40 pb-20 lg:pt-48 lg:pb-32">
         {/* Background Gradients */}
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-linear-to-bl from-[#00DDFD]/10 via-[#00DDFD]/5 to-transparent blur-3xl -z-10 rounded-full translate-x-1/3 -translate-y-1/4" />
-        <div className="absolute top-40 left-0 w-[500px] h-[500px] bg-linear-to-tr from-blue-500/5 to-transparent blur-3xl -z-10 rounded-full -translate-x-1/2" />
+        <div className="absolute top-0 right-0 w-200 h-200 bg-linear-to-bl from-[#00DDFD]/10 via-[#00DDFD]/5 to-transparent blur-3xl -z-10 rounded-full translate-x-1/3 -translate-y-1/4" />
+        <div className="absolute top-40 left-0 w-125 h-125 bg-linear-to-tr from-blue-500/5 to-transparent blur-3xl -z-10 rounded-full -translate-x-1/2" />
         
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
@@ -94,8 +123,8 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             
             {/* Diagram */}
-            <div className="relative order-2 lg:order-1 h-[400px] sm:h-[500px] flex items-center justify-center">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,theme(colors.slate.100)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(circle_at_center,black,transparent_80%)] opacity-50" />
+            <div className="relative order-2 lg:order-1 h-100 sm:h-125 flex items-center justify-center">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--color-slate-100)_1px,transparent_1px)] bg-size-[24px_24px] mask-[radial-gradient(circle_at_center,black,transparent_80%)] opacity-50" />
               
               <div className="relative flex items-center justify-center scale-[0.7] sm:scale-100 w-full h-full">
                 {/* Central Hub (KitaPay) */}
@@ -175,7 +204,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
             {/* Bento Card 1 */}
-            <div className="bg-white rounded-[2rem] p-8 md:p-12 border border-slate-100 hover:shadow-2xl hover:shadow-slate-200/50 transition-all group overflow-hidden relative">
+            <div className="bg-white rounded-4xl p-8 md:p-12 border border-slate-100 hover:shadow-2xl hover:shadow-slate-200/50 transition-all group overflow-hidden relative">
               <div className="w-12 h-12 bg-[#00DDFD]/10 rounded-2xl flex items-center justify-center mb-8 text-[#00DDFD]">
                 <Lightning weight="fill" className="w-6 h-6" />
               </div>
@@ -186,7 +215,7 @@ export default function LandingPage() {
             </div>
 
             {/* Bento Card 2 */}
-            <div className="bg-slate-900 rounded-[2rem] p-8 md:p-12 border border-slate-800 hover:shadow-2xl hover:shadow-slate-900/50 transition-all group overflow-hidden relative">
+            <div className="bg-slate-900 rounded-4xl p-8 md:p-12 border border-slate-800 hover:shadow-2xl hover:shadow-slate-900/50 transition-all group overflow-hidden relative">
               <div className="absolute top-0 right-0 w-64 h-64 bg-[#00DDFD]/10 rounded-full blur-3xl -translate-y-20 translate-x-20 pointer-events-none" />
               <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-8 text-white">
                 <Wallet weight="fill" className="w-6 h-6" />
@@ -198,7 +227,7 @@ export default function LandingPage() {
             </div>
 
             {/* Bento Card 3 */}
-            <div className="bg-white rounded-[2rem] p-8 md:p-12 border border-slate-100 hover:shadow-2xl hover:shadow-slate-200/50 transition-all group md:col-span-2 flex flex-col md:flex-row items-center gap-12 overflow-hidden">
+            <div className="bg-white rounded-4xl p-8 md:p-12 border border-slate-100 hover:shadow-2xl hover:shadow-slate-200/50 transition-all group md:col-span-2 flex flex-col md:flex-row items-center gap-12 overflow-hidden">
               <div className="flex-1">
                 <div className="w-12 h-12 bg-orange-100 rounded-2xl flex items-center justify-center mb-8 text-orange-600">
                   <TerminalWindow weight="fill" className="w-6 h-6" />
@@ -280,7 +309,7 @@ const response = await fetch('https://apikita.rinzgroup.web.id/v1/invoices', {
       <section className="py-24 relative overflow-hidden bg-white">
         <div className="max-w-5xl mx-auto px-6 relative z-10">
           <div className="bg-slate-50 rounded-[3rem] p-10 md:p-16 text-center border border-slate-100 shadow-xl relative overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,theme(colors.slate.100),transparent)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,var(--color-slate-100),transparent)]" />
             <div className="absolute top-0 right-0 w-64 h-64 bg-[#00DDFD]/10 blur-3xl rounded-full z-0 pointer-events-none" />
             
             <div className="relative z-10">
@@ -306,7 +335,9 @@ const response = await fetch('https://apikita.rinzgroup.web.id/v1/invoices', {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
             <div className="md:col-span-2">
               <div className="mb-6">
-                <img src="/KitaPay Blue Typograph.png" alt="KitaPay Logo" className="h-6 w-auto object-contain" />
+                <Link href="/" className="inline-block">
+                  <img src="/KitaPay Emblem.png" alt="KitaPay Emblem" className="h-16 sm:h-20 w-auto object-contain drop-shadow-xs" />
+                </Link>
               </div>
               <p className="text-slate-500 max-w-sm mb-6">
                 Penyedia link pembayaran terpercaya untuk memajukan bisnis UMKM dan Enterprise di seluruh Indonesia.

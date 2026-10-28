@@ -76,15 +76,23 @@ router.get('/:merchantId', async (req: Request, res: Response): Promise<any> => 
             .gte('created_at', startOfCurrentMonth);
 
         let usedQuota = 0;
+        let usedJagoQuota = 0;
         if (!reqError && requests) {
             usedQuota = requests.filter(req => {
                 const payload = req.payload as any;
                 // Check if it was instant and had 0 fee
                 return payload.payoutType === 'INSTANT_PAID' && payload.fee === 0 && payload.bankCode !== 'JAGO' && payload.bankCode !== 'ARTOS';
             }).length;
+
+            usedJagoQuota = requests.filter(req => {
+                const payload = req.payload as any;
+                return payload.payoutType === 'INSTANT_PAID' && payload.fee === 0 && (payload.bankCode === 'JAGO' || payload.bankCode === 'ARTOS');
+            }).length;
         }
 
         const remainingQuota = Math.max(0, maxQuota - usedQuota);
+        const jagoMaxQuota = 3;
+        const remainingJagoQuota = Math.max(0, jagoMaxQuota - usedJagoQuota);
 
         return res.json({
             success: true,
@@ -95,6 +103,11 @@ router.get('/:merchantId', async (req: Request, res: Response): Promise<any> => 
                 max: maxQuota,
                 used: usedQuota,
                 remaining: remainingQuota
+            },
+            jagoQuota: {
+                max: jagoMaxQuota,
+                used: usedJagoQuota,
+                remaining: remainingJagoQuota
             }
         });
     } catch (error: any) {

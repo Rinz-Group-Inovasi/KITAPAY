@@ -84,13 +84,34 @@ router.post('/request', async (req: Request, res: Response): Promise<any> => {
         let usedFreeQuota = false;
         
         if (payoutType === 'INSTANT_PAID') {
+            const now = new Date();
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+            // Count Used Quota from merchant_requests this month
+            const { data: requests } = await supabaseAdmin
+                .from('merchant_requests')
+                .select('payload')
+                .eq('merchant_id', merchantId)
+                .eq('request_type', 'WITHDRAWAL')
+                .gte('created_at', startOfMonth);
+
             if (bankCode === 'JAGO' || bankCode === 'ARTOS') {
-                fee = 0; // Unlimited free quota for Jago!
+                let usedJagoQuota = 0;
+                if (requests) {
+                    usedJagoQuota = requests.filter(req => {
+                        const p = req.payload as any;
+                        return p.payoutType === 'INSTANT_PAID' && p.fee === 0 && (p.bankCode === 'JAGO' || p.bankCode === 'ARTOS');
+                    }).length;
+                }
+
+                if (usedJagoQuota < 3) {
+                    fee = 0; // Free for first 3x per month
+                    usedFreeQuota = true;
+                } else {
+                    fee = 2000; // Subsequent withdrawals Rp 2.000
+                }
             } else {
-                const now = new Date();
-                const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-                
-                // Count Tx
+                // Count Tx for tier quota
                 const { count: txCount } = await supabaseAdmin
                     .from('transactions')
                     .select('*', { count: 'exact', head: true })
@@ -104,14 +125,6 @@ router.post('/request', async (req: Request, res: Response): Promise<any> => {
                 if (c >= 2000) maxQuota = 15; // Platinum
                 else if (c >= 1000) maxQuota = 10; // Gold
                 else if (c >= 500) maxQuota = 5; // Silver
-
-                // Count Used Quota
-                const { data: requests } = await supabaseAdmin
-                    .from('merchant_requests')
-                    .select('payload')
-                    .eq('merchant_id', merchantId)
-                    .eq('request_type', 'WITHDRAWAL')
-                    .gte('created_at', startOfMonth);
 
                 let usedQuota = 0;
                 if (requests) {

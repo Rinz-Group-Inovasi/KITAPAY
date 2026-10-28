@@ -18,8 +18,13 @@ const geistMono = Geist_Mono({
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "KitaPay Dashboard",
-  description: "KitaPay Payment Gateway Dashboard",
+  title: "KitaPay - Platform Pembayaran Digital & QRIS Instan",
+  description: "Terima pembayaran QRIS secara instan tanpa ribet untuk UMKM dan bisnis online.",
+  icons: {
+    icon: "/icon.png",
+    shortcut: "/icon.png",
+    apple: "/icon.png",
+  },
 };
 
 export default function RootLayout({

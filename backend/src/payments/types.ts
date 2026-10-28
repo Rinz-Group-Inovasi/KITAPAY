@@ -44,5 +44,5 @@ export interface PayoutResponse {
 export interface IPaymentProvider {
     createPayment(request: PaymentRequest): Promise<PaymentResponse>;
     requestPayout(request: PayoutRequest): Promise<PayoutResponse>;
-    verifyWebhookSignature(payload: any, signature: string): boolean;
+    verifyWebhookSignature(payload: any, signature: string, headers?: any): boolean;
 }

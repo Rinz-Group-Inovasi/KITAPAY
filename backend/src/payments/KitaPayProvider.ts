@@ -18,27 +18,42 @@ export class KitaPayProvider implements IPaymentProvider {
             let grossAmount = inputAmount;
 
             if (request.chargeFeeToCustomer) {
-                if (inputAmount >= 98000 && inputAmount < 98600) {
-                    grossAmount = 100000;
-                } else if (inputAmount >= 98600) {
-                    grossAmount = inputAmount + Math.round((inputAmount * 0.014) / 0.986);
+                if (inputAmount <= 20000) {
+                    grossAmount = inputAmount + 750;
+                } else if (inputAmount <= 50000) {
+                    grossAmount = inputAmount + 1000;
+                } else if (inputAmount <= 100000) {
+                    grossAmount = inputAmount + 1500;
                 } else {
-                    grossAmount = inputAmount + Math.round((inputAmount * 0.015 + 500) / 0.985);
+                    grossAmount = Math.ceil(inputAmount / 0.985);
                 }
             }
 
-            // Fee calculation (assuming similar to previous or as per your business logic)
-            const baseFee = Math.round((grossAmount * 0.007) + 310);
+            // Fee calculation (Opsi 1 Tiering)
+            let baseFee = 0;
             let totalDeduction = 0;
 
-            if (grossAmount < 100000) {
-                totalDeduction = Math.round((grossAmount * 0.015) + 500);
+            if (inputAmount <= 20000) {
+                baseFee = Math.round((grossAmount * 0.007) + 310);
+                totalDeduction = 750;
+            } else if (inputAmount <= 50000) {
+                baseFee = Math.round((grossAmount * 0.007) + 310);
+                totalDeduction = 1000;
+            } else if (inputAmount <= 100000) {
+                baseFee = Math.round((grossAmount * 0.007) + 310);
+                totalDeduction = 1500;
             } else {
-                totalDeduction = Math.round(grossAmount * 0.014);
+                baseFee = Math.round(grossAmount * 0.007);
+                totalDeduction = Math.round(grossAmount * 0.015);
             }
 
-            const kitapayFee = totalDeduction - baseFee;
-            const netAmount = grossAmount - totalDeduction;
+            let netAmount = grossAmount - totalDeduction;
+            if (request.chargeFeeToCustomer) {
+                netAmount = inputAmount;
+                totalDeduction = grossAmount - inputAmount;
+            }
+
+            const kitapayFee = Math.max(0, totalDeduction - baseFee);
 
             const merchantCode = request.merchantId.split('-')[0].toUpperCase();
             const orderId = `KP-${merchantCode}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;            

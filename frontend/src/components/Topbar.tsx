@@ -117,7 +117,7 @@ export function Topbar({ initialIsSandbox, kycStatus, defaultName }: TopbarProps
 
   return (
     <>
-      <header className="bg-white border-b border-slate-200 text-slate-800 px-4 md:px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-[100]">
+      <header className="bg-white border-b border-slate-200 text-slate-800 px-4 md:px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-100">
         
         <div className="flex items-center gap-2 md:gap-4">
           {/* Hamburger Icon for Mobile */}
@@ -186,7 +186,7 @@ export function Topbar({ initialIsSandbox, kycStatus, defaultName }: TopbarProps
 
       {/* Mobile Fullscreen Navigation Menu */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[200] bg-white flex flex-col md:hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
+        <div className="fixed inset-0 z-200 bg-white flex flex-col md:hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
           <div className="h-16 flex items-center justify-between px-6 border-b border-slate-100 shrink-0">
             <img src="/KitaPay Blue Typograph.png" alt="KitaPay Logo" className="w-28 h-auto object-contain" />
             <button 
