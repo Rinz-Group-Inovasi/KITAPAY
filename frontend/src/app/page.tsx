@@ -286,7 +286,7 @@ const response = await fetch('https://apikita.rinzgroup.web.id/v1/invoices', {
               <p className="text-slate-600 leading-relaxed">Tidak ada. Biaya hanya dipotong saat terjadi transaksi.</p>
             </div>
             <div className="bg-slate-50 p-6 md:p-8 rounded-2xl border border-slate-100 shadow-sm hover:border-slate-200 transition-colors">
-              <h4 className="text-lg font-bold text-slate-900 mb-2">Apakah setelah transaksi berhasil bisa langsung dicairkan?</h4>
+              <h4 className="text-lg font-bold text-slate-900 mb-2">Apakah setelah transaksi berhasil bisa langsung dilakukan settlement / pemindahan dana?</h4>
               <p className="text-slate-600 leading-relaxed">Tidak. Anda perlu menunggu hari berikutnya setelah pukul 12.00 WIB.</p>
             </div>
             <div className="bg-slate-50 p-6 md:p-8 rounded-2xl border border-slate-100 shadow-sm hover:border-slate-200 transition-colors">

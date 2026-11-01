@@ -279,7 +279,7 @@ export default function BankAccountsPage() {
                
                <div className="bg-blue-50/50 border border-blue-100 text-blue-800 text-sm p-4 rounded-xl flex gap-3">
                  <WarningCircle weight="fill" className="w-5 h-5 shrink-0 mt-0.5 text-blue-500" />
-                 <p>Pastikan nama pemilik rekening sama dengan nama identitas (KTP) yang terdaftar di sistem kami untuk menghindari penolakan pencairan.</p>
+                 <p>Pastikan nama pemilik rekening sama dengan nama identitas (KTP) yang terdaftar di sistem kami untuk menghindari penolakan settlement / pemindahan dana.</p>
                </div>
   
                <div className="flex flex-col sm:flex-row gap-3 pt-2 sm:justify-end">

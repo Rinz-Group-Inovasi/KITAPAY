@@ -152,7 +152,7 @@ export default function WithdrawPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-slate-800">Tarik Dana</h1>
-        <p className="text-slate-500 text-sm mt-1">Kelola pencairan dana Anda dan riwayat penarikan ke rekening bank.</p>
+        <p className="text-slate-500 text-sm mt-1">Kelola settlement / pemindahan dana Anda dan riwayat penarikan ke rekening bank.</p>
       </div>
 
       {/* Balances & Quick Actions */}
@@ -191,7 +191,7 @@ export default function WithdrawPage() {
              <div className="flex items-center gap-3">
                 <Lightning weight="fill" className="w-5 h-5 text-orange-400" />
                 <div className="text-left">
-                   <div className="text-sm">Pencairan Instan</div>
+                   <div className="text-sm">Settlement Instan</div>
                    <div className="text-xs font-medium text-slate-400 mt-0.5">
                      {tierData?.freeQuota?.remaining > 0 
                        ? `Gratis (Sisa ${tierData.freeQuota.remaining} kuota bulan ini)` 

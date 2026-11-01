@@ -18,29 +18,19 @@ export class KitaPayProvider implements IPaymentProvider {
             let grossAmount = inputAmount;
 
             if (request.chargeFeeToCustomer) {
-                if (inputAmount <= 20000) {
-                    grossAmount = inputAmount + 750;
-                } else if (inputAmount <= 50000) {
-                    grossAmount = inputAmount + 1000;
-                } else if (inputAmount <= 100000) {
+                if (inputAmount <= 100000) {
                     grossAmount = inputAmount + 1500;
                 } else {
                     grossAmount = Math.ceil(inputAmount / 0.985);
                 }
             }
 
-            // Fee calculation (Opsi 1 Tiering)
+            // Fee calculation (Upstream: Rp 1.110 untuk <= 100k, 0.7% untuk > 100k)
             let baseFee = 0;
             let totalDeduction = 0;
 
-            if (inputAmount <= 20000) {
-                baseFee = Math.round((grossAmount * 0.007) + 310);
-                totalDeduction = 750;
-            } else if (inputAmount <= 50000) {
-                baseFee = Math.round((grossAmount * 0.007) + 310);
-                totalDeduction = 1000;
-            } else if (inputAmount <= 100000) {
-                baseFee = Math.round((grossAmount * 0.007) + 310);
+            if (inputAmount <= 100000) {
+                baseFee = 1110;
                 totalDeduction = 1500;
             } else {
                 baseFee = Math.round(grossAmount * 0.007);

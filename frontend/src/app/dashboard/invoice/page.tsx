@@ -41,11 +41,7 @@ export default function InvoicePage() {
 
   let calculatedGross = Number(amount) || 0;
   if (chargeFeeToCustomer && calculatedGross > 0) {
-      if (calculatedGross <= 20000) {
-          calculatedGross += 750;
-      } else if (calculatedGross <= 50000) {
-          calculatedGross += 1000;
-      } else if (calculatedGross <= 100000) {
+      if (calculatedGross <= 100000) {
           calculatedGross += 1500;
       } else {
           calculatedGross = Math.ceil(calculatedGross / 0.985);

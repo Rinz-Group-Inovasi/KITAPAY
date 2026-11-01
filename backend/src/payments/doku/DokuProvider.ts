@@ -30,35 +30,23 @@ export class DokuProvider implements IPaymentProvider {
             let grossAmount = inputAmount;
 
             if (request.chargeFeeToCustomer) {
-                if (inputAmount <= 20000) {
-                    grossAmount = inputAmount + 750;
-                } else if (inputAmount <= 50000) {
-                    grossAmount = inputAmount + 1000;
-                } else if (inputAmount <= 100000) {
+                if (inputAmount <= 100000) {
                     grossAmount = inputAmount + 1500;
                 } else {
                     grossAmount = Math.ceil(inputAmount / 0.985);
                 }
             }
 
-            // Fee calculation (Opsi 1 Tiering based on DOKU upstream)
+            // Fee calculation (Upstream DOKU: Rp 1.110 [Rp 1.000 + PPN 11%] untuk <= 100k, 0.7% untuk > 100k)
             let baseFee = 0;
             let totalDeduction = 0;
 
-            if (inputAmount <= 20000) {
-                // Tier 1: Rp 1 - Rp 20.000 (Fee Rp 750, Modal DOKU Rp 500, Margin Rp 250)
-                baseFee = 500;
-                totalDeduction = 750;
-            } else if (inputAmount <= 50000) {
-                // Tier 2: Rp 20.001 - Rp 50.000 (Fee Rp 1.000, Modal DOKU Rp 500, Margin Rp 500)
-                baseFee = 500;
-                totalDeduction = 1000;
-            } else if (inputAmount <= 100000) {
-                // Tier 3: Rp 50.001 - Rp 100.000 (Fee Rp 1.500, Modal DOKU Rp 500, Margin Rp 1.000)
-                baseFee = 500;
+            if (inputAmount <= 100000) {
+                // Tier 1: Rp 1 - Rp 100.000 (Fee Rp 1.500 flat, Modal DOKU Rp 1.110, Margin Rp 390)
+                baseFee = 1110;
                 totalDeduction = 1500;
             } else {
-                // Tier 4: > Rp 100.000 (Fee 1.5%, Modal DOKU 0.7%, Margin 0.8%)
+                // Tier 2: > Rp 100.000 (Fee 1.5%, Modal DOKU 0.7%, Margin 0.8%)
                 baseFee = Math.round(grossAmount * 0.007);
                 totalDeduction = Math.round(grossAmount * 0.015);
             }
@@ -69,7 +57,7 @@ export class DokuProvider implements IPaymentProvider {
                 totalDeduction = grossAmount - inputAmount;
             }
 
-            const kitapayFee = totalDeduction - baseFee;
+            const kitapayFee = Math.max(0, totalDeduction - baseFee);
 
             const merchantCode = request.merchantId.split('-')[0].toUpperCase();
             const orderId = `KP-${merchantCode}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;

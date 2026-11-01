@@ -6,29 +6,108 @@ export class DokuSecurity {
     private static privateKeyCache: string | null = null;
     private static dokuPublicKeyCache: string | null = null;
 
+    static normalizePem(raw: string, defaultType: string = 'PRIVATE KEY'): string {
+        if (!raw) return '';
+        let str = raw.trim();
+
+        // Strip surrounding quotes
+        if ((str.startsWith('"') && str.endsWith('"')) || (str.startsWith("'") && str.endsWith("'"))) {
+            str = str.slice(1, -1).trim();
+        }
+
+        str = str.replace(/\\n/g, '\n').replace(/\\r/g, '');
+
+        if (str.includes('BEGIN')) {
+            const match = str.match(/-----BEGIN ([A-Z0-9 ]+)-----(.*)-----END ([A-Z0-9 ]+)-----/s);
+            if (match) {
+                const type = match[1];
+                const body = match[2].replace(/\s+/g, '');
+                const lines = body.match(/.{1,64}/g) || [];
+                return `-----BEGIN ${type}-----\n${lines.join('\n')}\n-----END ${type}-----\n`;
+            }
+        }
+
+        // Handle raw base64 content without -----BEGIN ... ----- headers
+        const body = str.replace(/\s+/g, '');
+        const lines = body.match(/.{1,64}/g) || [];
+        return `-----BEGIN ${defaultType}-----\n${lines.join('\n')}\n-----END ${defaultType}-----\n`;
+    }
+
     static getPrivateKey(): string {
         if (this.privateKeyCache) return this.privateKeyCache;
 
-        const relPath = process.env.DOKU_PRIVATE_KEY_PATH || 'certs/doku_private_key.pem';
-        const fullPath = path.isAbsolute(relPath) ? relPath : path.join(process.cwd(), relPath);
+        // 1. Prefer physical certificate file if it exists on disk (via .railwayignore deployment)
+        const explicitPath = process.env.DOKU_PRIVATE_KEY_PATH;
+        const defaultPath = path.join(process.cwd(), 'certs/doku_private_key.pem');
+        const resolvedPath = (explicitPath && explicitPath.endsWith('.pem'))
+            ? (path.isAbsolute(explicitPath) ? explicitPath : path.join(process.cwd(), explicitPath))
+            : defaultPath;
 
-        if (!fs.existsSync(fullPath)) {
-            throw new Error(`DOKU private key not found at: ${fullPath}`);
+        if (fs.existsSync(resolvedPath)) {
+            this.privateKeyCache = this.normalizePem(fs.readFileSync(resolvedPath, 'utf8'), 'PRIVATE KEY');
+            return this.privateKeyCache;
         }
 
-        this.privateKeyCache = fs.readFileSync(fullPath, 'utf8');
-        return this.privateKeyCache;
+        // 2. Check if base64 env is provided
+        if (process.env.DOKU_PRIVATE_KEY_B64) {
+            try {
+                const decoded = Buffer.from(process.env.DOKU_PRIVATE_KEY_B64.trim(), 'base64').toString('utf8');
+                this.privateKeyCache = this.normalizePem(decoded, 'PRIVATE KEY');
+                return this.privateKeyCache;
+            } catch (e: any) {
+                console.warn('[DokuSecurity] Failed to decode DOKU_PRIVATE_KEY_B64:', e.message);
+            }
+        }
+
+        // 3. Check candidate envs: DOKU_PRIVATE_KEY or DOKU_PRIVATE_KEY_PATH (if user pasted raw key into it)
+        const candidateKey = process.env.DOKU_PRIVATE_KEY || process.env.DOKU_PRIVATE_KEY_PATH;
+        if (candidateKey) {
+            const clean = candidateKey.trim().replace(/^["']|["']$/g, '');
+            // If it's raw key content rather than a short local file path
+            if (clean.length > 80 || clean.includes('BEGIN') || clean.startsWith('MII')) {
+                this.privateKeyCache = this.normalizePem(clean, 'PRIVATE KEY');
+                return this.privateKeyCache;
+            }
+        }
+
+        throw new Error(`DOKU private key tidak ditemukan di: ${resolvedPath} (dan tidak ada di env)`);
     }
 
     static getDokuPublicKey(): string | null {
         if (this.dokuPublicKeyCache) return this.dokuPublicKeyCache;
 
-        const relPath = process.env.DOKU_PUBLIC_KEY_PATH || 'certs/doku_server_public_key.pem';
-        const fullPath = path.isAbsolute(relPath) ? relPath : path.join(process.cwd(), relPath);
+        // 1. Prefer physical certificate file if it exists on disk
+        const explicitPath = process.env.DOKU_PUBLIC_KEY_PATH;
+        const defaultPath = path.join(process.cwd(), 'certs/doku_server_public_key.pem');
+        const resolvedPath = (explicitPath && explicitPath.endsWith('.pem'))
+            ? (path.isAbsolute(explicitPath) ? explicitPath : path.join(process.cwd(), explicitPath))
+            : defaultPath;
 
-        if (fs.existsSync(fullPath)) {
-            this.dokuPublicKeyCache = fs.readFileSync(fullPath, 'utf8');
+        if (fs.existsSync(resolvedPath)) {
+            this.dokuPublicKeyCache = this.normalizePem(fs.readFileSync(resolvedPath, 'utf8'), 'PUBLIC KEY');
             return this.dokuPublicKeyCache;
+        }
+
+        // 2. Check if base64 env is provided
+        if (process.env.DOKU_SERVER_PUBLIC_KEY_B64 || process.env.DOKU_PUBLIC_KEY_B64) {
+            try {
+                const b64 = (process.env.DOKU_SERVER_PUBLIC_KEY_B64 || process.env.DOKU_PUBLIC_KEY_B64)!.trim();
+                const decoded = Buffer.from(b64, 'base64').toString('utf8');
+                this.dokuPublicKeyCache = this.normalizePem(decoded, 'PUBLIC KEY');
+                return this.dokuPublicKeyCache;
+            } catch (e: any) {
+                console.warn('[DokuSecurity] Failed to decode public key b64:', e.message);
+            }
+        }
+
+        // 3. Check candidate envs: DOKU_PUBLIC_KEY, DOKU_SERVER_PUBLIC_KEY, or DOKU_PUBLIC_KEY_PATH
+        const candidateKey = process.env.DOKU_PUBLIC_KEY || process.env.DOKU_SERVER_PUBLIC_KEY || process.env.DOKU_PUBLIC_KEY_PATH;
+        if (candidateKey) {
+            const clean = candidateKey.trim().replace(/^["']|["']$/g, '');
+            if (clean.length > 80 || clean.includes('BEGIN') || clean.startsWith('MII')) {
+                this.dokuPublicKeyCache = this.normalizePem(clean, 'PUBLIC KEY');
+                return this.dokuPublicKeyCache;
+            }
         }
 
         return null;
@@ -80,10 +159,15 @@ export class DokuSecurity {
         const privateKey = this.getPrivateKey();
         const stringToSign = `${clientId}|${timestamp}`;
 
-        const sign = crypto.createSign('SHA256');
-        sign.update(stringToSign);
-        sign.end();
-        return sign.sign(privateKey, 'base64');
+        try {
+            const sign = crypto.createSign('SHA256');
+            sign.update(stringToSign);
+            sign.end();
+            return sign.sign(privateKey, 'base64');
+        } catch (err: any) {
+            console.error('[DokuSecurity] Signature generation failed. Key preview:', privateKey.substring(0, 40));
+            throw new Error(`Gagal menandatangani request DOKU (${err.message}). Pastikan nilai DOKU_PRIVATE_KEY_B64 atau DOKU_PRIVATE_KEY valid.`);
+        }
     }
 
     /**

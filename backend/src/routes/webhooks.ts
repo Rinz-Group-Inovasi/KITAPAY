@@ -95,25 +95,30 @@ router.post('/kitapay', async (req: Request, res: Response): Promise<any> => {
                 is_sandbox: tx.is_sandbox
             };
 
-            let responseStatus = 0;
-            let responseBody = '';
-            
-            try {
-                const axios = require('axios');
-                const forwardRes = await axios.post(targetUrl, forwardPayload, { timeout: 15000 });
-                responseStatus = forwardRes.status;
-                responseBody = typeof forwardRes.data === 'object' ? JSON.stringify(forwardRes.data) : String(forwardRes.data);
-            } catch (err: any) {
-                responseStatus = err.response?.status || 500;
-                responseBody = err.message;
-            }
+            // Async non-blocking forwarding
+            (async () => {
+                let responseStatus = 0;
+                let responseBody = '';
+                
+                try {
+                    const axios = require('axios');
+                    const forwardRes = await axios.post(targetUrl, forwardPayload, { timeout: 10000 });
+                    responseStatus = forwardRes.status;
+                    responseBody = typeof forwardRes.data === 'object' ? JSON.stringify(forwardRes.data) : String(forwardRes.data);
+                } catch (err: any) {
+                    responseStatus = err.response?.status || 500;
+                    responseBody = err.message;
+                }
 
-            await supabaseAdmin.from('webhook_logs').insert({
-                merchant_id: tx.merchant_id,
-                event_type: 'payment.' + (status === 'completed' ? 'success' : 'failed'),
-                payload: forwardPayload,
-                response_status: responseStatus,
-                response_body: responseBody
+                await supabaseAdmin.from('webhook_logs').insert({
+                    merchant_id: tx.merchant_id,
+                    event_type: 'payment.' + (status === 'completed' ? 'success' : 'failed'),
+                    payload: forwardPayload,
+                    response_status: responseStatus,
+                    response_body: responseBody
+                });
+            })().catch(err => {
+                console.error('[Webhook KitaPay] Forwarding error:', err);
             });
         }
 
@@ -137,10 +142,23 @@ router.post('/doku', async (req: Request, res: Response): Promise<any> => {
             });
         }
 
-        const orderId = payload.originalPartnerReferenceNo || payload.order?.invoice_number || payload.partnerReferenceNo;
-        const dokuStatus = payload.latestTransactionStatus || payload.transaction?.status;
+        // Extract orderId from all known DOKU payload variants (SNAP, Checkout, Direct API)
+        const orderId = payload.originalPartnerReferenceNo 
+            || payload.partnerReferenceNo 
+            || payload.order?.invoice_number 
+            || payload.order?.invoiceNumber 
+            || payload.invoice_number 
+            || payload.invoiceNumber 
+            || payload.trxId 
+            || payload.transaction?.original_request_id
+            || payload.additionalInfo?.partnerReferenceNo;
+
+        const dokuStatus = payload.latestTransactionStatus 
+            || payload.transaction?.status 
+            || payload.status;
 
         if (!orderId) {
+            console.warn('[Webhook DOKU] Missing partner reference number. Payload:', JSON.stringify(payload));
             return res.status(400).json({
                 responseCode: '4005602',
                 responseMessage: 'Missing partner reference number'
@@ -157,6 +175,7 @@ router.post('/doku', async (req: Request, res: Response): Promise<any> => {
             .single();
 
         if (fetchError || !tx) {
+            console.warn(`[Webhook DOKU] Transaction external_id ${orderId} not found`);
             return res.status(404).json({
                 responseCode: '4045601',
                 responseMessage: 'Transaction not found'
@@ -206,7 +225,7 @@ router.post('/doku', async (req: Request, res: Response): Promise<any> => {
                 .eq('id', tx.id);
         }
 
-        // Webhook Forwarding to Merchant
+        // Webhook Forwarding to Merchant (Execute in background so DOKU immediately receives 200 OK)
         const { data: merchantData } = await supabaseAdmin
             .from('merchants')
             .select('webhook_url, sandbox_webhook_url')
@@ -225,25 +244,30 @@ router.post('/doku', async (req: Request, res: Response): Promise<any> => {
                 is_sandbox: tx.is_sandbox
             };
 
-            let responseStatus = 0;
-            let responseBody = '';
+            // Async non-blocking forwarding to prevent webhook delay/timeout with DOKU
+            (async () => {
+                let responseStatus = 0;
+                let responseBody = '';
 
-            try {
-                const axios = require('axios');
-                const forwardRes = await axios.post(targetUrl, forwardPayload, { timeout: 15000 });
-                responseStatus = forwardRes.status;
-                responseBody = typeof forwardRes.data === 'object' ? JSON.stringify(forwardRes.data) : String(forwardRes.data);
-            } catch (err: any) {
-                responseStatus = err.response?.status || 500;
-                responseBody = err.message;
-            }
+                try {
+                    const axios = require('axios');
+                    const forwardRes = await axios.post(targetUrl, forwardPayload, { timeout: 10000 });
+                    responseStatus = forwardRes.status;
+                    responseBody = typeof forwardRes.data === 'object' ? JSON.stringify(forwardRes.data) : String(forwardRes.data);
+                } catch (err: any) {
+                    responseStatus = err.response?.status || 500;
+                    responseBody = err.message;
+                }
 
-            await supabaseAdmin.from('webhook_logs').insert({
-                merchant_id: tx.merchant_id,
-                event_type: 'payment.' + (isSuccess ? 'success' : 'failed'),
-                payload: forwardPayload,
-                response_status: responseStatus,
-                response_body: responseBody
+                await supabaseAdmin.from('webhook_logs').insert({
+                    merchant_id: tx.merchant_id,
+                    event_type: 'payment.' + (isSuccess ? 'success' : 'failed'),
+                    payload: forwardPayload,
+                    response_status: responseStatus,
+                    response_body: responseBody
+                });
+            })().catch(err => {
+                console.error('[Webhook DOKU] Forwarding error:', err);
             });
         }
 

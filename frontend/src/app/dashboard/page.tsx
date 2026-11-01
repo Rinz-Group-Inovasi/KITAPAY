@@ -92,14 +92,10 @@ export default function DashboardPage() {
     }
   };
 
-  // Kalkulasi gross real-time (Opsi 1 Tiering)
+  // Kalkulasi gross real-time (Skema Flat Rp 1.500 & 1,5%)
   let calculatedGross = Number(amount) || 0;
   if (chargeFeeToCustomer && calculatedGross > 0) {
-      if (calculatedGross <= 20000) {
-          calculatedGross += 750;
-      } else if (calculatedGross <= 50000) {
-          calculatedGross += 1000;
-      } else if (calculatedGross <= 100000) {
+      if (calculatedGross <= 100000) {
           calculatedGross += 1500;
       } else {
           calculatedGross = Math.ceil(calculatedGross / 0.985);
@@ -284,7 +280,7 @@ export default function DashboardPage() {
              </div>
              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <div className="flex justify-between items-start mb-2">
-                   <h3 className="text-lg font-bold text-slate-800">Pencairan Instan</h3>
+                   <h3 className="text-lg font-bold text-slate-800">Settlement Instan</h3>
                    {tierData?.freeQuota?.remaining > 0 ? (
                      <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-md">Gratis (Sisa {tierData.freeQuota.remaining}x)</span>
                    ) : (
@@ -295,7 +291,7 @@ export default function DashboardPage() {
                 <button 
                   onClick={() => { setPayoutType('INSTANT_PAID'); setAmount(''); setIsPayoutOpen(true); }}
                   className="bg-slate-900 text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-800 transition-colors w-full">
-                  Cairkan Dana Instan
+                  Pindahkan Dana Instan
                 </button>
              </div>
           </div>
