@@ -78,23 +78,23 @@ export default function AnimatedHeroGraphic() {
   };
 
   return (
-    <div className="relative block mt-12 lg:mt-0 animate-in fade-in slide-in-from-right-8 duration-1000 delay-300 perspective-1000">
+    <div className="relative block mt-8 sm:mt-12 lg:mt-0 animate-in fade-in slide-in-from-right-8 duration-1000 delay-300 perspective-1000">
       <div 
         ref={containerRef}
-        className="relative w-full aspect-square max-w-[320px] sm:max-w-100 lg:max-w-125 mx-auto transform-3d rotate-y-[-10deg] rotate-x-[5deg]"
+        className="relative w-full aspect-square max-w-[280px] xs:max-w-[320px] sm:max-w-100 lg:max-w-125 mx-auto transform-3d rotate-y-[-8deg] sm:rotate-y-[-10deg] rotate-x-[4deg] sm:rotate-x-[5deg]"
       >
         {/* QRIS Card (Step 1) */}
         <div 
           ref={qrisCardRef}
-          className="absolute top-10 left-4 right-4 sm:left-10 sm:right-10 bg-white/60 backdrop-blur-xl border border-white/50 rounded-3xl p-6 shadow-2xl shadow-slate-200/50 z-20 overflow-hidden"
+          className="absolute top-4 sm:top-10 left-2 right-2 sm:left-10 sm:right-10 bg-white/70 backdrop-blur-xl border border-white/60 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl shadow-slate-200/50 z-20 overflow-hidden"
         >
-          <div className="flex justify-between items-center mb-6 relative z-20">
-            <div className="h-4 w-24 bg-slate-200 rounded-full"></div>
-            <div className="h-6 w-16 bg-[#00DDFD]/20 text-[#00DDFD] text-xs font-bold rounded-full flex items-center justify-center">QRIS</div>
+          <div className="flex justify-between items-center mb-3 sm:mb-6 relative z-20">
+            <div className="h-3 sm:h-4 w-20 sm:w-24 bg-slate-200 rounded-full"></div>
+            <div className="h-5 sm:h-6 px-2 sm:px-3 bg-[#00DDFD]/20 text-[#00DDFD] text-[10px] sm:text-xs font-bold rounded-full flex items-center justify-center">QRIS</div>
           </div>
           
           {/* Realistic QR Placeholder */}
-          <div className="w-40 h-40 mx-auto bg-slate-50 rounded-xl relative p-3 border border-slate-200 shadow-inner flex items-center justify-center">
+          <div className="w-32 h-32 sm:w-40 sm:h-40 mx-auto bg-slate-50 rounded-xl relative p-2 sm:p-3 border border-slate-200 shadow-inner flex items-center justify-center">
             <svg viewBox="0 0 100 100" className="w-full h-full">
               {/* Top Left Marker */}
               <rect x="0" y="0" width="28" height="28" fill="none" stroke="#1e293b" strokeWidth="4" rx="4" />
@@ -123,16 +123,16 @@ export default function AnimatedHeroGraphic() {
         {/* Success Card (Step 2) */}
         <div 
           ref={successCardRef}
-          className="absolute top-40 left-0 right-10 sm:right-20 bg-slate-900 rounded-3xl p-6 shadow-2xl shadow-slate-900/30 z-30 opacity-0"
+          className="absolute top-28 sm:top-40 left-0 right-4 sm:right-20 bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl shadow-slate-900/30 z-30 opacity-0"
         >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">
-              <ShieldCheck weight="fill" />
+          <div className="flex items-center gap-2.5 sm:gap-3 mb-2 sm:mb-4">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">
+              <ShieldCheck weight="fill" className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div className="text-white font-bold text-sm sm:text-base">Pembayaran Berhasil</div>
+            <div className="text-white font-bold text-xs sm:text-base">Pembayaran Berhasil</div>
           </div>
-          <div className="text-slate-400 text-xs sm:text-sm mb-4">Invoice #INV-293842</div>
-          <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+          <div className="text-slate-400 text-[10px] sm:text-xs mb-3 sm:mb-4">Invoice #INV-293842</div>
+          <div className="h-1.5 sm:h-2 w-full bg-slate-800 rounded-full overflow-hidden">
             <div className="h-full bg-green-400 w-full"></div>
           </div>
         </div>
@@ -140,19 +140,19 @@ export default function AnimatedHeroGraphic() {
         {/* Log Card (Step 3) */}
         <div 
           ref={logCardRef}
-          className="absolute top-64 left-10 right-0 sm:left-20 bg-white rounded-3xl p-5 shadow-2xl shadow-slate-200/50 z-40 border border-slate-100 opacity-0"
+          className="absolute top-48 sm:top-64 left-4 sm:left-20 right-0 bg-white rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-2xl shadow-slate-200/50 z-40 border border-slate-100 opacity-0"
         >
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
-                <div className="w-4 h-4 bg-blue-500 rounded-full animate-pulse"></div>
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
+                <div className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-500 rounded-full animate-pulse"></div>
               </div>
               <div>
                 <div className="text-slate-900 font-bold text-xs sm:text-sm">QRIS Diterima</div>
-                <div className="text-slate-500 text-[10px] sm:text-xs">Baru saja</div>
+                <div className="text-slate-500 text-[9px] sm:text-xs">Baru saja</div>
               </div>
             </div>
-            <div className="text-green-500 font-bold text-sm sm:text-base">+Rp 150.000</div>
+            <div className="text-green-500 font-bold text-xs sm:text-base">+Rp 150.000</div>
           </div>
         </div>
 

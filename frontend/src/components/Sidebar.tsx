@@ -29,7 +29,7 @@ export function Sidebar({ isSandbox = false }: { isSandbox?: boolean }) {
     <aside className="w-64 bg-white border-r border-slate-200 hidden md:flex md:flex-col shrink-0 sticky top-0 h-screen">
       <div className="h-16 flex items-center px-6 border-b border-slate-100 shrink-0">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <img src="/KitaPay Blue Typograph.png" alt="KitaPay Logo" className="w-28 h-auto object-contain" />
+          <img src="/KitaPay Emblem.png" alt="KitaPay Emblem" className="h-9 w-auto object-contain" />
         </Link>
       </div>
 

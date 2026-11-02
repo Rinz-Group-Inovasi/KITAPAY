@@ -53,10 +53,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Sidebar */}
       <aside className="w-64 bg-white border-r border-slate-200 hidden md:flex md:flex-col shrink-0 sticky top-0 h-screen z-10">
         <div className="h-16 flex items-center px-6 border-b border-slate-100 shrink-0">
-          <Link href="/admin" className="flex items-center gap-2">
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-              Kita<span className="text-[#00DDFD]">Pay</span> <span className="text-slate-400 font-bold text-lg">Admin</span>
-            </h1>
+          <Link href="/admin" className="flex items-center gap-2.5">
+            <img src="/KitaPay Emblem.png" alt="KitaPay Emblem" className="h-8 w-auto object-contain" />
+            <span className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-900 text-white">Admin</span>
           </Link>
         </div>
         

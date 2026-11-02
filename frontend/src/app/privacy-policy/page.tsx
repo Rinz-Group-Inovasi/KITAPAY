@@ -6,11 +6,11 @@ export default function PrivacyPolicyPage() {
     <div className="min-h-screen bg-[#FAFAFA] font-sans text-slate-800 flex flex-col">
       {/* Top Navigation */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 border-r border-slate-200 pr-4">
-            <img src="/KitaPay Blue Typograph.png" alt="KitaPay Logo" className="h-6 w-auto object-contain" />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 sm:gap-3 pr-3 sm:pr-4 sm:border-r border-slate-200">
+            <img src="/KitaPay Emblem.png" alt="KitaPay Emblem" className="h-8 sm:h-9 w-auto object-contain" />
           </Link>
-          <div className="flex items-center gap-6 text-sm font-semibold">
+          <div className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm font-semibold">
             <Link href="/pricing" className="text-slate-500 hover:text-slate-800 transition-colors">Biaya</Link>
             <Link href="/docs" className="text-slate-500 hover:text-slate-800 transition-colors">Panduan</Link>
             <Link href="/login" className="text-slate-500 hover:text-slate-800 transition-colors">Daftar/Login</Link>

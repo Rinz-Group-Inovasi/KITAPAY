@@ -188,7 +188,9 @@ export function Topbar({ initialIsSandbox, kycStatus, defaultName }: TopbarProps
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-200 bg-white flex flex-col md:hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
           <div className="h-16 flex items-center justify-between px-6 border-b border-slate-100 shrink-0">
-            <img src="/KitaPay Blue Typograph.png" alt="KitaPay Logo" className="w-28 h-auto object-contain" />
+            <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
+              <img src="/KitaPay Emblem.png" alt="KitaPay Emblem" className="h-9 w-auto object-contain" />
+            </Link>
             <button 
               onClick={() => setIsMobileMenuOpen(false)}
               className="p-2 -mr-2 text-slate-500 hover:text-slate-800 rounded-lg bg-slate-50"

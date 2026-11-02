@@ -5,6 +5,7 @@ import { createClientBrowser } from '@/lib/supabase/client';
 import { useToast } from '@/components/ToastProvider';
 import { CircleNotch } from '@phosphor-icons/react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -74,7 +75,9 @@ export default function LoginPage() {
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
         <div className="text-center mb-8">
-          <img src="/KitaPay Blue Typograph.png" alt="KitaPay Logo" className="w-40 h-auto object-contain mx-auto mb-2" />
+          <Link href="/" className="inline-block hover:opacity-90 transition-opacity">
+            <img src="/KitaPay Emblem.png" alt="KitaPay Emblem" className="h-16 w-auto object-contain mx-auto mb-2 drop-shadow-xs" />
+          </Link>
           <p className="text-sm text-slate-500 mt-2">Masuk untuk mengelola transaksi merchant Anda</p>
         </div>
 

@@ -9,6 +9,7 @@ import { API_BASE_URL } from '@/lib/api';
 // Simple Icons
 import { SiJavascript, SiJson, SiCurl } from 'react-icons/si';
 import { Check, Copy } from '@phosphor-icons/react';
+import AES256Seal from '@/components/AES256Seal';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -132,11 +133,11 @@ export default function DocsPage() {
     <div className="min-h-screen bg-white text-slate-900 font-sans flex flex-col">
       {/* Top Navigation */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
-        <div className="max-w-360 mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 border-r border-slate-200 pr-4">
-            <img src="/KitaPay Blue Typograph.png" alt="KitaPay Logo" className="h-6 w-auto object-contain" />
+        <div className="max-w-360 mx-auto px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 sm:gap-3 pr-3 sm:pr-4 sm:border-r border-slate-200">
+            <img src="/KitaPay Emblem.png" alt="KitaPay Emblem" className="h-8 sm:h-9 w-auto object-contain" />
           </Link>
-          <div className="flex items-center gap-6 text-sm font-semibold">
+          <div className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm font-semibold">
             <Link href="/pricing" className="text-slate-500 hover:text-slate-900 transition-colors">Biaya</Link>
             <Link href="/docs" className="text-slate-900 transition-colors">Panduan</Link>
             <Link href="/login" className="text-slate-500 hover:text-slate-900 transition-colors">Daftar/Login</Link>
@@ -208,6 +209,19 @@ export default function DocsPage() {
               </p>
               <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-lg text-sm my-6">
                 <strong>Important:</strong> Your API keys carry many privileges, so be sure to keep them secure! Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, and so forth.
+              </div>
+
+              {/* AES-256 Cryptographic Standard Note */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 my-6 flex items-center gap-4">
+                <AES256Seal size={44} className="w-11 h-11 shrink-0" />
+                <div className="text-xs">
+                  <div className="font-bold text-slate-900 text-sm">
+                    Standar Kriptografi AES 256
+                  </div>
+                  <p className="text-slate-600 mt-0.5 leading-relaxed">
+                    Kredensial API dan data sensitif dienkripsi menggunakan standar enkripsi simetris <strong>AES-256</strong> dan ditransmisikan melalui protokol aman HTTPS.
+                  </p>
+                </div>
               </div>
             </div>
             <div className="xl:sticky xl:top-25 h-fit space-y-6">

@@ -13,6 +13,7 @@ import uploadRoutes from './routes/upload';
 import merchantRoutes from './routes/merchant';
 import tierRoutes from './routes/tier';
 import supportRoutes from './routes/support';
+import { runAES256SelfTest } from './utils/aes256';
 
 dotenv.config();
 
@@ -45,6 +46,28 @@ app.use(express.json());
 
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', service: 'Kitapay Backend' });
+});
+
+// AES-256 Cryptographic Standard Healthcheck & Verification Endpoint
+app.get('/api/security/aes-status', (req, res) => {
+    const diagnostic = runAES256SelfTest();
+    res.status(200).json({
+        standard: 'AES-256-GCM',
+        cipher: 'aes-256-gcm',
+        keyLength: '256-bit (32 bytes)',
+        mode: 'Galois/Counter Mode (GCM) Authenticated Encryption',
+        authTagLength: '128-bit (16 bytes)',
+        ivLength: '96-bit (12 bytes)',
+        status: diagnostic.success ? 'ACTIVE_AND_COMPLIANT' : 'DEGRADED',
+        compliance: {
+            nist: 'NIST SP 800-38D Recommendation for GCM Mode',
+            fips: 'FIPS 197 Advanced Encryption Standard (AES)',
+            pciDss: 'PCI DSS v4.0 Requirement 3.4 (Strong Cryptography)',
+            bankIndonesia: 'PBI Standar Keamanan Sistem Pembayaran & QRIS Dinamis'
+        },
+        diagnostics: diagnostic.details,
+        timestamp: new Date().toISOString()
+    });
 });
 
 app.use('/api/payments', paymentRoutes);

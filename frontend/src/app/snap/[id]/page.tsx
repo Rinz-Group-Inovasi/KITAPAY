@@ -107,7 +107,7 @@ export default function SnapPage() {
       {/* Top Header */}
       <div className="sticky top-0 z-20 bg-white shadow-sm px-4 py-3 flex items-center justify-between">
         <div className="flex items-center text-sm">
-          <img src="/KitaPay Blue Typograph.png" alt="KitaPay" className="h-5 w-auto object-contain" />
+          <img src="/KitaPay Emblem.png" alt="KitaPay Emblem" className="h-6 sm:h-7 w-auto object-contain" />
           <span className="text-slate-300 mx-2">|</span>
           <span className="font-semibold text-slate-700 truncate max-w-[180px]">
             {transaction.merchants?.business_name || 'KitaPay Merchant'}
