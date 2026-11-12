@@ -24,8 +24,9 @@ router.post('/', upload.single('file'), async (req, res) => {
         const b64 = Buffer.from(req.file.buffer).toString('base64');
         const dataURI = 'data:' + req.file.mimetype + ';base64,' + b64;
         
+        const folder = req.body?.folder || 'kitapay_promosi';
         const result = await cloudinary.uploader.upload(dataURI, {
-            folder: 'kitapay_kyc',
+            folder,
         });
 
         res.status(200).json({ secure_url: result.secure_url });

@@ -12,6 +12,24 @@ import { twMerge } from 'tailwind-merge';
 
 const cn = (...inputs: (string | undefined | null | false)[]) => twMerge(clsx(inputs));
 
+const getWithdrawalDetails = (payload: any) => {
+  const fee = Number(payload?.fee || 0);
+  let transferAmount = 0;
+  if (payload?.amount !== undefined && payload?.totalDeduction !== undefined) {
+    if (payload.amount === payload.totalDeduction && fee > 0) {
+      transferAmount = payload.totalDeduction - fee;
+    } else {
+      transferAmount = payload.amount;
+    }
+  } else if (payload?.amount !== undefined) {
+    transferAmount = payload.amount;
+  } else if (payload?.totalDeduction !== undefined) {
+    transferAmount = payload.totalDeduction - fee;
+  }
+  const totalDeduction = payload?.totalDeduction || (transferAmount + fee);
+  return { fee, transferAmount, totalDeduction };
+};
+
 export default function AdminWithdrawalsPage() {
   const toast = useToast();
   
@@ -28,6 +46,9 @@ export default function AdminWithdrawalsPage() {
   });
 
   const withdrawals = (data?.requests || []).filter((r: any) => r.request_type === 'WITHDRAWAL');
+
+  const selectedApproveReq = withdrawals.find((r: any) => r.id === selectedApproveId);
+  const selectedRejectReq = withdrawals.find((r: any) => r.id === selectedRejectId);
 
   const handleApprove = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,52 +141,71 @@ export default function AdminWithdrawalsPage() {
                   <th className="p-4">Tanggal / Waktu</th>
                   <th className="p-4">Merchant</th>
                   <th className="p-4">Tujuan Transfer</th>
-                  <th className="p-4">Total Penarikan</th>
+                  <th className="p-4">Nominal Transfer</th>
                   <th className="p-4 w-48">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {withdrawals.map((req: any) => (
-                  <tr key={req.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="p-4 align-top">
-                      <div className="flex items-center gap-2 text-sm text-slate-500">
-                        <Clock weight="bold" className="w-4 h-4" />
-                        <span>{format(new Date(req.created_at), 'dd MMM yyyy, HH:mm', { locale: id })}</span>
-                      </div>
-                    </td>
-                    <td className="p-4 align-top">
-                      <p className="font-bold text-slate-900">{req.merchants?.business_name}</p>
-                      <p className="text-sm text-slate-500">{req.merchants?.email}</p>
-                    </td>
-                    <td className="p-4 align-top">
-                       <div className="text-sm">
-                          <p className="font-bold text-slate-900">{req.payload?.bankCode}</p>
-                          <p className="text-slate-700">{req.payload?.accountNumber}</p>
-                          <p className="text-slate-500 mt-1 uppercase">{req.payload?.accountName}</p>
-                       </div>
-                    </td>
-                    <td className="p-4 align-top">
-                       <p className="text-lg font-bold text-slate-900">Rp {new Intl.NumberFormat('id-ID').format(req.payload?.totalDeduction || req.payload?.amount || 0)}</p>
-                       <p className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded w-fit mt-1">{req.payload?.payoutType === 'INSTANT_PAID' ? 'Instan (Termasuk Biaya)' : 'Terjadwal (Gratis)'}</p>
-                    </td>
-                    <td className="p-4 align-top">
-                      <div className="flex flex-col gap-2">
-                        <button 
-                          onClick={() => setSelectedApproveId(req.id)}
-                          className="w-full bg-green-100 text-green-700 hover:bg-green-200 px-3 py-2 rounded-lg font-bold text-sm transition-colors border border-green-200 flex items-center justify-center gap-1.5"
-                        >
-                          <CheckCircle weight="fill" className="w-4 h-4" /> Konfirmasi
-                        </button>
-                        <button 
-                          onClick={() => setSelectedRejectId(req.id)}
-                          className="w-full bg-red-100 text-red-700 hover:bg-red-200 px-3 py-2 rounded-lg font-bold text-sm transition-colors border border-red-200 flex items-center justify-center gap-1.5"
-                        >
-                          <XCircle weight="fill" className="w-4 h-4" /> Tolak
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                {withdrawals.map((req: any) => {
+                  const { fee, transferAmount, totalDeduction } = getWithdrawalDetails(req.payload);
+                  return (
+                    <tr key={req.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="p-4 align-top">
+                        <div className="flex items-center gap-2 text-sm text-slate-500">
+                          <Clock weight="bold" className="w-4 h-4" />
+                          <span>{format(new Date(req.created_at), 'dd MMM yyyy, HH:mm', { locale: id })}</span>
+                        </div>
+                      </td>
+                      <td className="p-4 align-top">
+                        <p className="font-bold text-slate-900">{req.merchants?.business_name}</p>
+                        <p className="text-sm text-slate-500">{req.merchants?.email}</p>
+                      </td>
+                      <td className="p-4 align-top">
+                         <div className="text-sm">
+                            <p className="font-bold text-slate-900">{req.payload?.bankCode}</p>
+                            <p className="text-slate-700">{req.payload?.accountNumber}</p>
+                            <p className="text-slate-500 mt-1 uppercase">{req.payload?.accountName}</p>
+                         </div>
+                      </td>
+                      <td className="p-4 align-top">
+                         <p className="text-lg font-bold text-slate-900">Rp {new Intl.NumberFormat('id-ID').format(transferAmount)}</p>
+                         <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                           <span className="text-xs font-semibold bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
+                             {req.payload?.payoutType === 'INSTANT_PAID' ? 'Instan' : 'Terjadwal'}
+                           </span>
+                           {fee > 0 ? (
+                             <span className="text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded">
+                               Biaya: Rp {new Intl.NumberFormat('id-ID').format(fee)}
+                             </span>
+                           ) : (
+                             <span className="text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded">
+                               Gratis
+                             </span>
+                           )}
+                         </div>
+                         {fee > 0 && (
+                           <p className="text-[11px] text-slate-400 mt-1">Potong Saldo: Rp {new Intl.NumberFormat('id-ID').format(totalDeduction)}</p>
+                         )}
+                      </td>
+                      <td className="p-4 align-top">
+                        <div className="flex flex-col gap-2">
+                          <button 
+                            onClick={() => setSelectedApproveId(req.id)}
+                            className="w-full bg-green-100 text-green-700 hover:bg-green-200 px-3 py-2 rounded-lg font-bold text-sm transition-colors border border-green-200 flex items-center justify-center gap-1.5"
+                          >
+                            <CheckCircle weight="fill" className="w-4 h-4" /> Konfirmasi
+                          </button>
+                          <button 
+                            onClick={() => setSelectedRejectId(req.id)}
+                            className="w-full bg-red-100 text-red-700 hover:bg-red-200 px-3 py-2 rounded-lg font-bold text-sm transition-colors border border-red-200 flex items-center justify-center gap-1.5"
+                          >
+                            <XCircle weight="fill" className="w-4 h-4" /> Tolak
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -178,8 +218,40 @@ export default function AdminWithdrawalsPage() {
           <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl relative">
             <button onClick={() => { setSelectedApproveId(null); setProofFile(null); }} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><X weight="bold" className="w-5 h-5"/></button>
             <h2 className="text-xl font-bold mb-1 text-slate-900">Konfirmasi Penarikan</h2>
-            <p className="text-sm text-slate-500 mb-6">Unggah bukti transfer untuk menyelesaikan permintaan ini.</p>
+            <p className="text-sm text-slate-500 mb-4">Unggah bukti transfer untuk menyelesaikan permintaan ini.</p>
             
+            {selectedApproveReq && (() => {
+              const { fee, transferAmount, totalDeduction } = getWithdrawalDetails(selectedApproveReq.payload);
+              return (
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 mb-5 text-sm space-y-1.5">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-500">Merchant:</span>
+                    <span className="font-bold text-slate-800">{selectedApproveReq.merchants?.business_name}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-500">Tujuan:</span>
+                    <span className="font-semibold text-slate-800">{selectedApproveReq.payload?.bankCode} - {selectedApproveReq.payload?.accountNumber} ({selectedApproveReq.payload?.accountName})</span>
+                  </div>
+                  <div className="flex justify-between items-center border-t border-slate-200 pt-1.5 mt-1">
+                    <span className="text-xs text-slate-600 font-semibold">Nominal Ditransfer:</span>
+                    <span className="font-extrabold text-base text-slate-900">Rp {new Intl.NumberFormat('id-ID').format(transferAmount)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-500">Biaya Admin:</span>
+                    <span className={`font-bold ${fee > 0 ? 'text-amber-700' : 'text-emerald-700'}`}>
+                      {fee > 0 ? `Rp ${new Intl.NumberFormat('id-ID').format(fee)}` : 'Gratis'}
+                    </span>
+                  </div>
+                  {fee > 0 && (
+                    <div className="flex justify-between items-center text-[11px] text-slate-400">
+                      <span>Total Potong Saldo:</span>
+                      <span>Rp {new Intl.NumberFormat('id-ID').format(totalDeduction)}</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
             <form onSubmit={handleApprove} className="space-y-4">
               <div 
                 onClick={() => fileInputRef.current?.click()} 
@@ -217,8 +289,19 @@ export default function AdminWithdrawalsPage() {
           <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl relative">
             <button onClick={() => { setSelectedRejectId(null); setRejectReason(''); }} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><X weight="bold" className="w-5 h-5"/></button>
             <h2 className="text-xl font-bold mb-1 text-slate-900">Tolak Penarikan</h2>
-            <p className="text-sm text-slate-500 mb-6">Saldo akan dikembalikan ke merchant.</p>
+            <p className="text-sm text-slate-500 mb-4">Saldo akan dikembalikan penuh ke merchant.</p>
             
+            {selectedRejectReq && (() => {
+              const { transferAmount, totalDeduction } = getWithdrawalDetails(selectedRejectReq.payload);
+              return (
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-4 text-xs space-y-1">
+                  <p><span className="text-slate-500">Merchant:</span> <strong className="text-slate-800">{selectedRejectReq.merchants?.business_name}</strong></p>
+                  <p><span className="text-slate-500">Nominal Transfer:</span> <strong className="text-slate-800">Rp {new Intl.NumberFormat('id-ID').format(transferAmount)}</strong></p>
+                  <p><span className="text-slate-500">Saldo Dikembalikan:</span> <strong className="text-slate-800">Rp {new Intl.NumberFormat('id-ID').format(totalDeduction)}</strong></p>
+                </div>
+              );
+            })()}
+
             <form onSubmit={handleReject} className="space-y-4">
               <div>
                  <label className="block text-sm font-bold text-slate-800 mb-2">Alasan Penolakan</label>

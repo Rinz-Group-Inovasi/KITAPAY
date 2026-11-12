@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { SquaresFour, FileText, Receipt, ChartLineUp, DownloadSimple, Bank, ShieldCheck, BookOpen, Key, User, Star, Headset } from '@phosphor-icons/react';
+import { SquaresFour, FileText, Receipt, ChartLineUp, DownloadSimple, Bank, ShieldCheck, BookOpen, Key, User, Star, Headset, WhatsappLogo } from '@phosphor-icons/react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -11,6 +11,7 @@ export const DASHBOARD_LINKS = [
   { name: 'Dashboard', href: '/dashboard', icon: SquaresFour },
   { name: 'Transaksi', href: '/dashboard/transactions', icon: ChartLineUp },
   { name: 'Invoice', href: '/dashboard/invoice', icon: Receipt },
+  { name: 'KitaOrder (WhatsApp)', href: '/dashboard/kitaorder', icon: WhatsappLogo },
   { name: 'Level Merchant', href: '/dashboard/tier', icon: Star },
   { name: 'Webhook Log', href: '/dashboard/webhooks', icon: FileText },
   { name: 'Penarikan', href: '/dashboard/withdraw', icon: DownloadSimple },

@@ -162,7 +162,8 @@ export default function AdminHistoryDashboard() {
                       )}
                       {req.request_type === 'WITHDRAWAL' && (
                          <div className="text-sm space-y-1 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                            <p><span className="text-slate-500">Nominal:</span> <span className="font-bold text-black">Rp {new Intl.NumberFormat('id-ID').format(req.payload.amount)}</span></p>
+                            <p><span className="text-slate-500">Nominal Ditransfer:</span> <span className="font-bold text-black">Rp {new Intl.NumberFormat('id-ID').format(req.payload.amount)}</span></p>
+                            <p><span className="text-slate-500">Biaya:</span> <span className="font-bold text-black">{Number(req.payload?.fee || 0) > 0 ? `Rp ${new Intl.NumberFormat('id-ID').format(req.payload.fee)}` : 'Gratis'}</span></p>
                             <p><span className="text-slate-500">Tujuan:</span> <span className="font-bold text-black">{req.payload.bankCode} - {req.payload.accountNumber}</span></p>
                             <p><span className="text-slate-500">Atas Nama:</span> <span className="font-bold text-black">{req.payload.accountName}</span></p>
                             <p><span className="text-slate-500">Tipe:</span> <span className="font-bold text-black">{req.payload.payoutType === 'INSTANT_PAID' ? 'Instan' : 'Terjadwal'}</span></p>

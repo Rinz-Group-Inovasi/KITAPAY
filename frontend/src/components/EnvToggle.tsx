@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { PageSkeleton } from './PageSkeleton';
-import { useToast } from './ToastProvider';
+import { useToast } from '@/components/ToastProvider';
 
 export function EnvToggle({ initialIsSandbox, kycStatus }: { initialIsSandbox: boolean, kycStatus?: string }) {
   const [isSandbox, setIsSandbox] = useState(initialIsSandbox);

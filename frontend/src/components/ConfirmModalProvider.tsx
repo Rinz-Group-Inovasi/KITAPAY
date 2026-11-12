@@ -91,7 +91,14 @@ export function ConfirmModalProvider({ children }: { children: React.ReactNode }
 export function useConfirm() {
   const context = useContext(ConfirmModalContext);
   if (!context) {
-    throw new Error('useConfirm must be used within a ConfirmModalProvider');
+    return {
+      confirm: async (msg: React.ReactNode, title?: string) => {
+        if (typeof window !== 'undefined') {
+          return window.confirm(typeof msg === 'string' ? msg : (title || 'Konfirmasi'));
+        }
+        return true;
+      }
+    };
   }
   return context;
 }

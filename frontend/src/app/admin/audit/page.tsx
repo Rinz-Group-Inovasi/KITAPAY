@@ -82,8 +82,28 @@ export default function SuperAdminAuditPage() {
                       <p className="text-sm text-slate-500">{req.merchants?.email}</p>
                     </td>
                     <td className="p-4 align-top">
-                       <p className="text-sm font-bold text-slate-900">Rp {new Intl.NumberFormat('id-ID').format(req.payload?.totalDeduction || req.payload?.amount || 0)}</p>
-                       <p className="text-xs text-slate-500 mt-1">{req.payload?.bankCode} - {req.payload?.accountNumber}</p>
+                       <p className="text-sm font-bold text-slate-900">
+                         Rp {new Intl.NumberFormat('id-ID').format(
+                           req.payload?.amount !== undefined && req.payload?.totalDeduction !== undefined && req.payload.amount === req.payload.totalDeduction && Number(req.payload?.fee || 0) > 0
+                             ? req.payload.totalDeduction - Number(req.payload.fee)
+                             : (req.payload?.amount ?? ((req.payload?.totalDeduction || 0) - Number(req.payload?.fee || 0)))
+                         )}
+                       </p>
+                       <p className="text-xs text-slate-500 mt-0.5">{req.payload?.bankCode} - {req.payload?.accountNumber}</p>
+                       <div className="flex items-center gap-1.5 mt-1">
+                          <span className="text-[10px] font-medium text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">
+                            {req.payload?.payoutType === 'INSTANT_PAID' ? 'Instan' : 'Terjadwal'}
+                          </span>
+                          {Number(req.payload?.fee || 0) > 0 ? (
+                            <span className="text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded">
+                              Biaya: Rp {new Intl.NumberFormat('id-ID').format(Number(req.payload.fee))}
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded">
+                              Gratis
+                            </span>
+                          )}
+                       </div>
                     </td>
                     <td className="p-4 align-top">
                       <div className={cn(
