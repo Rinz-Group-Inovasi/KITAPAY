@@ -23,43 +23,51 @@ router.get('/dashboard/:merchantId', async (req, res) => {
         }
 
         // --- LAZY SETTLEMENT ---
-        // Find all PAID transactions older than 24 hours (or 1 minute in Sandbox) that are not settled
-        const settleThreshold = new Date();
-        if (isSandbox) {
-            settleThreshold.setMinutes(settleThreshold.getMinutes() - 1);
-        } else {
-            settleThreshold.setDate(settleThreshold.getDate() - 1);
-        }
+        // Settlement only runs on weekdays (Monday - Friday WIB). No settlement on Saturday (6) and Sunday (0).
+        const now = new Date();
+        const wibDate = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+        const currentWibDay = wibDate.getUTCDay(); // 0=Sun, 6=Sat
+        const isWeekend = currentWibDay === 0 || currentWibDay === 6;
 
-        const { data: unsettledTxs } = await supabaseAdmin
-            .from('transactions')
-            .select('id, net_amount')
-            .eq('merchant_id', merchantId)
-            .eq('is_sandbox', isSandbox)
-            .in('status', ['PAID', 'COMPLETED'])
-            .eq('settled', false)
-            .lte('created_at', settleThreshold.toISOString()); // Note: ideally should use paid_at, but created_at is fine for now
+        if (!isWeekend) {
+            // Find all PAID transactions older than 24 hours (or 1 minute in Sandbox) that are not settled
+            const settleThreshold = new Date();
+            if (isSandbox) {
+                settleThreshold.setMinutes(settleThreshold.getMinutes() - 1);
+            } else {
+                settleThreshold.setDate(settleThreshold.getDate() - 1);
+            }
 
-        if (unsettledTxs && unsettledTxs.length > 0) {
-            const totalToSettle = unsettledTxs.reduce((sum, tx) => sum + tx.net_amount, 0);
-            const txIds = unsettledTxs.map(tx => tx.id);
+            const { data: unsettledTxs } = await supabaseAdmin
+                .from('transactions')
+                .select('id, net_amount')
+                .eq('merchant_id', merchantId)
+                .eq('is_sandbox', isSandbox)
+                .in('status', ['PAID', 'COMPLETED'])
+                .eq('settled', false)
+                .lte('created_at', settleThreshold.toISOString()); // Note: ideally should use paid_at, but created_at is fine for now
 
-            // Update transactions to settled
-            await supabaseAdmin.from('transactions').update({ settled: true }).in('id', txIds);
+            if (unsettledTxs && unsettledTxs.length > 0) {
+                const totalToSettle = unsettledTxs.reduce((sum, tx) => sum + tx.net_amount, 0);
+                const txIds = unsettledTxs.map(tx => tx.id);
 
-            // Fetch current merchant balances
-            const { data: currentMerchant } = await supabaseAdmin.from('merchants').select('*').eq('id', merchantId).single();
-            if (currentMerchant) {
-                if (isSandbox) {
-                    await supabaseAdmin.from('merchants').update({
-                        sandbox_balance: (currentMerchant.sandbox_balance || 0) + totalToSettle,
-                        sandbox_pending_balance: Math.max(0, (currentMerchant.sandbox_pending_balance || 0) - totalToSettle)
-                    }).eq('id', merchantId);
-                } else {
-                    await supabaseAdmin.from('merchants').update({
-                        available_balance: (currentMerchant.available_balance || 0) + totalToSettle,
-                        pending_balance: Math.max(0, (currentMerchant.pending_balance || 0) - totalToSettle)
-                    }).eq('id', merchantId);
+                // Update transactions to settled
+                await supabaseAdmin.from('transactions').update({ settled: true }).in('id', txIds);
+
+                // Fetch current merchant balances
+                const { data: currentMerchant } = await supabaseAdmin.from('merchants').select('*').eq('id', merchantId).single();
+                if (currentMerchant) {
+                    if (isSandbox) {
+                        await supabaseAdmin.from('merchants').update({
+                            sandbox_balance: (currentMerchant.sandbox_balance || 0) + totalToSettle,
+                            sandbox_pending_balance: Math.max(0, (currentMerchant.sandbox_pending_balance || 0) - totalToSettle)
+                        }).eq('id', merchantId);
+                    } else {
+                        await supabaseAdmin.from('merchants').update({
+                            available_balance: (currentMerchant.available_balance || 0) + totalToSettle,
+                            pending_balance: Math.max(0, (currentMerchant.pending_balance || 0) - totalToSettle)
+                        }).eq('id', merchantId);
+                    }
                 }
             }
         }

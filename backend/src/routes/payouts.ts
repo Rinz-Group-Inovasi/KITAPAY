@@ -55,7 +55,12 @@ router.post('/request', async (req: Request, res: Response): Promise<any> => {
         const now = new Date();
         const wibDate = new Date(now.getTime() + (7 * 60 * 60 * 1000));
         const currentWibHour = wibDate.getUTCHours();
-        const currentWibDay = wibDate.getUTCDay(); // 0=Sun, 1=Mon, ..., 5=Fri
+        const currentWibDay = wibDate.getUTCDay(); // 0=Sun, 1=Mon, ..., 5=Fri, 6=Sat
+
+        // Saturday (6) and Sunday (0) are closed for settlement
+        if (currentWibDay === 0 || currentWibDay === 6) {
+            return res.status(400).json({ error: 'Settlement / penarikan dana hanya dapat dilakukan pada hari kerja (Senin - Jumat).' });
+        }
 
         if (currentWibHour < 9 || currentWibHour >= 20) {
             return res.status(400).json({ error: 'Penarikan hanya dapat dilakukan antara pukul 09.00 hingga 20.00 WIB.' });

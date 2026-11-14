@@ -21,3 +21,4 @@ jobs:
             npm install
             chmod -R +x node_modules/.bin
             pm2 restart kitapay-backend
+

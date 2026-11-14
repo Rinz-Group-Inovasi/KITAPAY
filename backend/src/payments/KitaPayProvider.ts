@@ -159,7 +159,9 @@ export class KitaPayProvider implements IPaymentProvider {
 
             if (request.payoutType === 'SCHEDULED_FREE') {
                 const d = new Date();
-                d.setDate(d.getDate() + (6 - d.getDay() + 7) % 7);
+                // Schedule for next Monday at 09:00 WIB (business day)
+                const daysUntilMonday = (1 - d.getDay() + 7) % 7 || 7;
+                d.setDate(d.getDate() + daysUntilMonday);
                 d.setHours(9, 0, 0, 0);
                 scheduledFor = d.toISOString();
             }

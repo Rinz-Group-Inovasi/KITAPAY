@@ -589,8 +589,8 @@ const response = await fetch('https://apikita.rinzgroup.web.id/v1/invoices', {
               <p className="text-sm sm:text-base text-slate-600 leading-relaxed">Berkisar 5-30 menit pada jam kerja. Penarikan pada malam hari akan diproses pada hari berikutnya.</p>
             </div>
             <div className="bg-slate-50 p-4 sm:p-6 md:p-8 rounded-2xl border border-slate-100 shadow-xs hover:border-slate-200 transition-colors">
-              <h4 className="text-base sm:text-lg font-bold text-slate-900 mb-2">Apakah bisa melakukan penarikan dana pada hari libur?</h4>
-              <p className="text-sm sm:text-base text-slate-600 leading-relaxed">Bisa. Kami tetap beroperasi pada Sabtu Minggu dan hari libur nasional.</p>
+              <h4 className="text-base sm:text-lg font-bold text-slate-900 mb-2">Apakah bisa melakukan penarikan dana pada hari libur / akhir pekan?</h4>
+              <p className="text-sm sm:text-base text-slate-600 leading-relaxed">Tidak. Penarikan dana / settlement hanya dapat diajukan pada hari kerja (Senin - Jumat, pukul 09.00 - 20.00 WIB). Hari Sabtu dan Minggu operasional penarikan libur.</p>
             </div>
           </div>
         </div>

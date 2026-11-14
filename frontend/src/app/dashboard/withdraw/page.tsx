@@ -14,6 +14,17 @@ import { PageSkeleton } from '@/components/PageSkeleton';
 
 const cn = (...inputs: (string | undefined | null | false)[]) => twMerge(clsx(inputs));
 
+function getWibInfo() {
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const wib = new Date(utc + 7 * 60 * 60 * 1000);
+  const day = wib.getDay(); // 0=Sun, 1=Mon, ..., 5=Fri, 6=Sat
+  const hour = wib.getHours();
+  const isWeekend = day === 0 || day === 6;
+  const isOperatingHours = hour >= 9 && hour < 20;
+  return { day, hour, isWeekend, isOperatingHours };
+}
+
 function BankLogo({ bankName }: { bankName: string }) {
   const [svg, setSvg] = useState<string | null>(null);
   
@@ -101,6 +112,8 @@ export default function WithdrawPage() {
     setIsPageLoading(false);
   };
 
+  const { isWeekend, day: currentWibDay } = getWibInfo();
+
   useEffect(() => {
     fetchData();
   }, [user, isSandbox]);
@@ -108,6 +121,22 @@ export default function WithdrawPage() {
   const handleRequestPayout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || loading) return;
+
+    const { isWeekend: weekendNow, isOperatingHours, day } = getWibInfo();
+    if (weekendNow) {
+      toast.error('Settlement / penarikan dana hanya dapat dilakukan pada hari kerja (Senin - Jumat).');
+      return;
+    }
+
+    if (!isOperatingHours) {
+      toast.error('Penarikan hanya dapat dilakukan antara pukul 09.00 hingga 20.00 WIB.');
+      return;
+    }
+
+    if (payoutType === 'SCHEDULED_FREE' && day !== 5) {
+      toast.error('Penarikan Terjadwal hanya dapat dilakukan pada hari Jumat.');
+      return;
+    }
     
     if (Number(amount) > balance) {
       toast.error('Nominal penarikan melebihi saldo yang tersedia.');
