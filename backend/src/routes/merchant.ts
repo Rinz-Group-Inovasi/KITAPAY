@@ -74,14 +74,14 @@ router.get('/dashboard/:merchantId', async (req, res) => {
         // --- END LAZY SETTLEMENT ---
 
         // --- LAZY EXPIRATION ---
-        const now = new Date().toISOString();
+        const nowIso = now.toISOString();
         const { data: expiredTxs } = await supabaseAdmin
             .from('transactions')
             .select('id')
             .eq('merchant_id', merchantId)
             .eq('is_sandbox', isSandbox)
             .eq('status', 'PENDING')
-            .lt('expires_at', now);
+            .lt('expires_at', nowIso);
             
         if (expiredTxs && expiredTxs.length > 0) {
             const expiredIds = expiredTxs.map(tx => tx.id);
@@ -254,14 +254,14 @@ router.get('/invoices/:merchantId', async (req, res) => {
         const isSandbox = env === 'sandbox';
 
         // --- LAZY EXPIRATION ---
-        const now = new Date().toISOString();
+        const nowIso = new Date().toISOString();
         const { data: expiredTxs } = await supabaseAdmin
             .from('transactions')
             .select('id')
             .eq('merchant_id', merchantId)
             .eq('is_sandbox', isSandbox)
             .eq('status', 'PENDING')
-            .lt('expires_at', now);
+            .lt('expires_at', nowIso);
             
         if (expiredTxs && expiredTxs.length > 0) {
             const expiredIds = expiredTxs.map(tx => tx.id);
