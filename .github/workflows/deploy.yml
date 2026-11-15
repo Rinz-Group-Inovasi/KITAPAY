@@ -19,6 +19,7 @@ jobs:
             cd /var/www/kitapay/Kitapay-Backend/backend
             git pull origin main
             npm install
-            chmod -R +x node_modules/.bin
-            pm2 restart kitapay-backend
+            npm run build
+            pm2 start dist/index.js --name kitapay-backend --restart-delay=5000 --max-restarts=5 -f
+            pm2 save
 

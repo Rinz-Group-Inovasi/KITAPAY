@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import crypto from 'crypto';
 import { supabaseAdmin } from '../supabase';
 
 const router = Router();
@@ -194,8 +195,6 @@ router.put('/webhook-settings/:merchantId', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-
-import crypto from 'crypto';
 
 router.get('/api-keys/:merchantId', async (req, res) => {
     try {

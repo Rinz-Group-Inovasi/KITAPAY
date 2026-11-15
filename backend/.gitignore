@@ -2,3 +2,6 @@
 .env.*
 certs/
 *.pem
+node_modules/
+dist/
+
