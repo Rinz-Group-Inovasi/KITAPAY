@@ -116,8 +116,9 @@ router.get('/dashboard/:merchantId', async (req, res) => {
             .eq('merchant_id', merchantId)
             .eq('is_sandbox', isSandbox);
             
-        const uangMasuk = allTxs ? allTxs.filter(t => t.status === 'PAID').reduce((sum, t) => sum + t.amount, 0) : 0;
-        const transactionCount = allTxs ? allTxs.length : 0;
+        const paidTxs = allTxs ? allTxs.filter(t => t.status === 'PAID') : [];
+        const uangMasuk = paidTxs.reduce((sum, t) => sum + t.amount, 0);
+        const transactionCount = paidTxs.length;
 
         // Fetch total uang keluar
         const { data: pyts } = await supabaseAdmin
@@ -131,7 +132,7 @@ router.get('/dashboard/:merchantId', async (req, res) => {
         return res.status(200).json({
             balance,
             pendingBalance,
-            transactionCount: txs?.length || 0,
+            transactionCount,
             uangMasuk,
             uangKeluar,
             transactions: (txs || []).slice(0, 5),
