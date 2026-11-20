@@ -45,7 +45,7 @@ app.use(cors({
 app.use(express.json());
 
 app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'ok', service: 'Kitapay Backend' });
+    res.status(200).json({ status: 'ok', service: 'Kitapay Backend', version: '2.0.2' });
 });
 
 // AES-256 Cryptographic Standard Healthcheck & Verification Endpoint

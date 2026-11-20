@@ -71,10 +71,15 @@ export default function WithdrawPage() {
     const merchantId = getClientMerchantId(user.id);
     const env = isSandbox ? 'sandbox' : 'live';
 
-    // Fetch merchant
-    const { data: merchant } = await supabase.from('merchants').select('available_balance, sandbox_balance').eq('id', merchantId).single();
-    if (merchant) {
-      setBalance(isSandbox ? (merchant.sandbox_balance || 0) : (merchant.available_balance || 0));
+    // Fetch merchant balance via API
+    try {
+      const dashRes = await fetch(`${API_BASE_URL}/merchant/dashboard/${merchantId}?liveUserId=${user.id}&env=${env}`);
+      if (dashRes.ok) {
+        const dashData = await dashRes.json();
+        setBalance(dashData.balance || 0);
+      }
+    } catch (e) {
+      console.error('Failed to fetch merchant balance', e);
     }
 
     // Fetch verified bank accounts from requests via API
