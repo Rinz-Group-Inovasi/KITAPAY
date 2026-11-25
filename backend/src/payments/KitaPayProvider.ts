@@ -227,11 +227,10 @@ export class KitaPayProvider implements IPaymentProvider {
     }
 
     verifyWebhookSignature(payload: any, signature: string): boolean {
-        const secret = process.env.KITAPAY_WEBHOOK_SECRET || process.env.KITAPAY_SECRET_KEY || process.env.PAKASIR_API_KEY || 'secret';
+        const secret = process.env.KITAPAY_WEBHOOK_SECRET || process.env.KITAPAY_SECRET_KEY || process.env.PAKASIR_API_KEY || '';
+        if (!secret || !signature) return false;
         const expectedSignature = crypto.createHmac('sha256', secret).update(JSON.stringify(payload)).digest('hex');
-        // You can uncomment below if KitaPay signs their webhooks this way.
-        // return signature === expectedSignature; 
-        
-        return true;
+        if (signature.length !== expectedSignature.length) return false;
+        return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature));
     }
 }

@@ -192,7 +192,7 @@ export class DokuSecurity {
     }
 
     /**
-     * Verify SNAP Webhook Notification Signature
+     * Verify DOKU Webhook Notification Signature (supports HTTP HMACSHA256, SNAP Asymmetric RSA, and SNAP Symmetric HMAC-SHA512)
      */
     static verifyWebhookSignature(
         httpMethod: string,
@@ -200,27 +200,79 @@ export class DokuSecurity {
         requestBody: any,
         timestamp: string,
         signature: string,
-        clientSecret: string
+        clientSecret: string,
+        rawBody?: string,
+        headers?: any
     ): boolean {
         try {
-            // For notification, SNAP stringToSign formula:
-            // HTTPMethod + ":" + EndpointUrl + ":" + Lowercase(HexEncode(SHA256(minify(RequestBody)))) + ":" + Timestamp
-            // Or with empty accessToken: HTTPMethod + ":" + EndpointUrl + "::" + Lowercase(...)
+            if (!signature || !clientSecret) return false;
+
+            const bodyStr = rawBody || JSON.stringify(requestBody);
             const minifiedBody = JSON.stringify(requestBody);
-            const bodyHash = crypto.createHash('sha256').update(minifiedBody).digest('hex').toLowerCase();
+            const candidatePaths = Array.from(new Set([
+                endpointPath,
+                '/api/webhooks/doku',
+                '/webhooks/doku'
+            ].filter(Boolean)));
 
-            // Try candidate formulas used by DOKU notification
-            const candidates = [
-                `${httpMethod.toUpperCase()}:${endpointPath}:${bodyHash}:${timestamp}`,
-                `${httpMethod.toUpperCase()}:${endpointPath}::${bodyHash}:${timestamp}`,
-            ];
+            // 1. DOKU HTTP Notification format: Signature: "HMACSHA256=..."
+            if (signature.startsWith('HMACSHA256=')) {
+                const providedHmac = signature.slice('HMACSHA256='.length).trim();
+                const clientId = headers?.['client-id'] || '';
+                const requestId = headers?.['request-id'] || '';
+                const reqTimestamp = headers?.['request-timestamp'] || timestamp || '';
+                if (!clientId || !requestId || !reqTimestamp || !providedHmac) return false;
 
-            for (const candidate of candidates) {
-                const hmac = crypto.createHmac('sha512', clientSecret);
-                hmac.update(candidate);
-                const expected = hmac.digest('base64');
-                if (expected === signature) {
-                    return true;
+                for (const bodyCandidate of Array.from(new Set([bodyStr, minifiedBody]))) {
+                    const digest = crypto.createHash('sha256').update(bodyCandidate, 'utf8').digest('base64');
+                    for (const target of candidatePaths) {
+                        const component = `Client-Id:${clientId}\nRequest-Id:${requestId}\nRequest-Timestamp:${reqTimestamp}\nRequest-Target:${target}\nDigest:${digest}`;
+                        const expected = crypto.createHmac('sha256', clientSecret).update(component).digest('base64');
+                        if (expected.length === providedHmac.length && crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(providedHmac))) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+
+            if (!timestamp) return false;
+
+            // 2. SNAP Asymmetric RSA-SHA256 (X-SIGNATURE signed by DOKU Server Private Key)
+            const dokuPubKey = this.getDokuPublicKey();
+            if (dokuPubKey) {
+                for (const bodyCandidate of Array.from(new Set([minifiedBody, bodyStr]))) {
+                    const bodyHash = crypto.createHash('sha256').update(bodyCandidate).digest('hex').toLowerCase();
+                    for (const target of candidatePaths) {
+                        for (const strToVerify of [
+                            `${httpMethod.toUpperCase()}:${target}:${bodyHash}:${timestamp}`,
+                            `${httpMethod.toUpperCase()}:${target}::${bodyHash}:${timestamp}`
+                        ]) {
+                            const verifier = crypto.createVerify('RSA-SHA256');
+                            verifier.update(strToVerify);
+                            verifier.end();
+                            if (verifier.verify(dokuPubKey, signature, 'base64')) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 3. SNAP Symmetric HMAC-SHA512
+            for (const bodyCandidate of Array.from(new Set([minifiedBody, bodyStr]))) {
+                const bodyHash = crypto.createHash('sha256').update(bodyCandidate).digest('hex').toLowerCase();
+                for (const target of candidatePaths) {
+                    const candidates = [
+                        `${httpMethod.toUpperCase()}:${target}:${bodyHash}:${timestamp}`,
+                        `${httpMethod.toUpperCase()}:${target}::${bodyHash}:${timestamp}`,
+                    ];
+                    for (const candidate of candidates) {
+                        const expected = crypto.createHmac('sha512', clientSecret).update(candidate).digest('base64');
+                        if (expected.length === signature.length && crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature))) {
+                            return true;
+                        }
+                    }
                 }
             }
 

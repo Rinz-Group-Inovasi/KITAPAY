@@ -286,19 +286,70 @@ export class DokuProvider implements IPaymentProvider {
         }
     }
 
-    verifyWebhookSignature(payload: any, signature: string, headers?: any): boolean {
-        if (!signature) return true; // lenient fallback if signature header not configured yet
+    verifyWebhookSignature(payload: any, signature: string, headers?: any, rawBody?: string): boolean {
+        const effectiveSig = signature || headers?.['x-signature'] || headers?.['signature'] || '';
+        if (!effectiveSig) return false;
 
-        const timestamp = headers?.['x-timestamp'] || '';
-        const endpoint = headers?.['x-request-target'] || '/api/webhooks/doku';
+        const timestamp = headers?.['x-timestamp'] || headers?.['request-timestamp'] || '';
+        const endpoint = headers?.['x-request-target'] || headers?.['request-target'] || '/api/webhooks/doku';
 
         return DokuSecurity.verifyWebhookSignature(
             'POST',
             endpoint,
             payload,
             timestamp,
-            signature,
-            this.getClientSecret()
+            effectiveSig,
+            this.getClientSecret(),
+            rawBody,
+            headers
         );
+    }
+
+    /**
+     * Authoritative server-to-server order status check to DOKU API (/orders/v1/status/:invoiceNumber)
+     * Prevents any forged webhook from ever crediting live merchant balance.
+     */
+    async verifyOrderStatusAtDoku(invoiceNumber: string, expectedAmount: number): Promise<{ verified: boolean; dokuStatus?: string }> {
+        try {
+            const crypto = await import('crypto');
+            const clientId = this.getClientId();
+            const secretKey = this.getClientSecret();
+            if (!clientId || !secretKey || !invoiceNumber) return { verified: false };
+
+            const requestId = `VER-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+            const timestamp = DokuSecurity.getUtcTimestamp();
+            const targetPath = `/orders/v1/status/${encodeURIComponent(invoiceNumber)}`;
+            const component = `Client-Id:${clientId}\nRequest-Id:${requestId}\nRequest-Timestamp:${timestamp}\nRequest-Target:${targetPath}`;
+            const hmac = crypto.createHmac('sha256', secretKey).update(component).digest('base64');
+
+            const baseUrl = DokuTokenManager.getBaseUrl();
+            const res = await fetch(`${baseUrl}${targetPath}`, {
+                method: 'GET',
+                headers: {
+                    'Client-Id': clientId,
+                    'Request-Id': requestId,
+                    'Request-Timestamp': timestamp,
+                    'Signature': `HMACSHA256=${hmac}`
+                }
+            });
+
+            if (!res.ok) {
+                console.warn(`[DokuProvider] Upstream status check HTTP ${res.status} for ${invoiceNumber}`);
+                return { verified: false };
+            }
+
+            const data: any = await res.json();
+            const txStatus = String(data?.transaction?.status || '').toUpperCase();
+            const paidAmt = Number(data?.order?.amount ?? data?.transaction?.amount ?? 0);
+
+            if (txStatus === 'SUCCESS' && Math.round(paidAmt) === Math.round(Number(expectedAmount))) {
+                return { verified: true, dokuStatus: 'SUCCESS' };
+            }
+
+            return { verified: false, dokuStatus: txStatus };
+        } catch (err: any) {
+            console.error('[DokuProvider] verifyOrderStatusAtDoku error:', err.message);
+            return { verified: false };
+        }
     }
 }

@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import crypto from 'crypto';
 import { supabaseAdmin } from '../supabase';
+import { validateSafeWebhookUrl } from '../utils/urlValidator';
 
 const router = Router();
 
@@ -183,6 +184,20 @@ router.put('/webhook-settings/:merchantId', async (req, res) => {
     try {
         const { merchantId } = req.params;
         const { webhookUrl, sandboxWebhookUrl } = req.body;
+
+        if (webhookUrl) {
+            const check = await validateSafeWebhookUrl(webhookUrl);
+            if (!check.valid) {
+                return res.status(400).json({ error: check.reason });
+            }
+        }
+        if (sandboxWebhookUrl) {
+            const checkSandbox = await validateSafeWebhookUrl(sandboxWebhookUrl);
+            if (!checkSandbox.valid) {
+                return res.status(400).json({ error: checkSandbox.reason });
+            }
+        }
+
         const { error } = await supabaseAdmin
             .from('merchants')
             .update({ 

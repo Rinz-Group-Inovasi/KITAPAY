@@ -85,8 +85,11 @@ router.post('/create', createPaymentLimiter, async (req: Request, res: Response)
         const validatedBody = validation.data;
         const { amount, customerEmail, customerWhatsapp, paymentMethod } = validatedBody;
 
-        // KYC Check
+        // KYC & Banned Check
         const { data: merchant } = await supabaseAdmin.from('merchants').select('verification_status, charge_fee_to_customer').eq('id', merchantId).single();
+        if (merchant?.verification_status === 'BANNED' || merchant?.verification_status === 'SUSPENDED') {
+            return res.status(403).json({ error: 'Akun merchant ini telah diblokir karena pelanggaran keamanan.' });
+        }
         if (!isSandbox && (!merchant || merchant.verification_status !== 'VERIFIED')) {
             return res.status(403).json({ error: 'Akun Anda belum terverifikasi (Unverified). Anda tidak dapat menerima pembayaran sebelum menyelesaikan KYC.' });
         }
@@ -145,6 +148,23 @@ router.post('/:id/simulate', async (req: Request, res: Response): Promise<any> =
         const { data: userAuth, error: authError } = await supabaseAdmin.auth.getUser(token);
         if (authError || !userAuth.user) {
             return res.status(401).json({ error: 'Unauthorized. Invalid token.' });
+        }
+
+        // Strict guard: only SANDBOX transactions owned by the user (or Sandbox Merchant) may be simulated
+        const { data: txCheck, error: txCheckErr } = await supabaseAdmin
+            .from('transactions')
+            .select('id, merchant_id, is_sandbox')
+            .eq('id', id)
+            .single();
+
+        if (txCheckErr || !txCheck) {
+            return res.status(404).json({ error: 'Transaction not found.' });
+        }
+        if (!txCheck.is_sandbox) {
+            return res.status(403).json({ error: 'Simulasi pembayaran hanya diizinkan untuk transaksi Sandbox.' });
+        }
+        if (txCheck.merchant_id !== userAuth.user.id && txCheck.merchant_id !== '88888888-8888-8888-8888-888888888888') {
+            return res.status(403).json({ error: 'Anda tidak memiliki akses untuk mensimulasikan transaksi ini.' });
         }
 
         // Use RPC for ACID transaction

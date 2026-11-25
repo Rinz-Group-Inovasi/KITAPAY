@@ -42,7 +42,11 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use(express.json());
+app.use(express.json({
+    verify: (req: any, _res, buf) => {
+        req.rawBody = buf.toString('utf8');
+    }
+}));
 
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', service: 'Kitapay Backend', version: '2.0.2' });

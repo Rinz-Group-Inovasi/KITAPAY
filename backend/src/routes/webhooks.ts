@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
-import { getPaymentProvider } from '../payments';
+import { getPaymentProvider, DokuProvider } from '../payments';
 import { supabaseAdmin } from '../supabase';
+import { validateSafeWebhookUrl } from '../utils/urlValidator';
 
 const router = Router();
 
@@ -101,6 +102,10 @@ router.post('/kitapay', async (req: Request, res: Response): Promise<any> => {
                 let responseBody = '';
                 
                 try {
+                    const safeCheck = await validateSafeWebhookUrl(targetUrl);
+                    if (!safeCheck.valid) {
+                        throw new Error(`Blocked unsafe webhook URL: ${safeCheck.reason}`);
+                    }
                     const axios = require('axios');
                     const forwardRes = await axios.post(targetUrl, forwardPayload, { timeout: 10000 });
                     responseStatus = forwardRes.status;
@@ -131,10 +136,10 @@ router.post('/kitapay', async (req: Request, res: Response): Promise<any> => {
 router.post('/doku', async (req: Request, res: Response): Promise<any> => {
     try {
         const payload = req.body;
-        const signature = (req.headers['x-signature'] as string) || '';
+        const signature = (req.headers['x-signature'] as string) || (req.headers['signature'] as string) || '';
         const provider = getPaymentProvider();
 
-        if (!provider.verifyWebhookSignature(payload, signature, req.headers)) {
+        if (!provider.verifyWebhookSignature(payload, signature, req.headers, (req as any).rawBody)) {
             console.warn('[Webhook DOKU] Signature verification rejected');
             return res.status(401).json({
                 responseCode: '4015600',
@@ -190,6 +195,18 @@ router.post('/doku', async (req: Request, res: Response): Promise<any> => {
         }
 
         if (isSuccess) {
+            // Authoritative server-to-server verification at DOKU for live transactions
+            if (!tx.is_sandbox && provider instanceof DokuProvider) {
+                const verification = await provider.verifyOrderStatusAtDoku(tx.external_id, tx.amount);
+                if (!verification.verified) {
+                    console.warn(`[Webhook DOKU] Authoritative check FAILED for ${tx.external_id} (DOKU status: ${verification.dokuStatus})`);
+                    return res.status(403).json({
+                        responseCode: '4035600',
+                        responseMessage: 'Transaction not verified as SUCCESS at DOKU'
+                    });
+                }
+            }
+
             await supabaseAdmin
                 .from('transactions')
                 .update({ status: 'PAID', updated_at: new Date().toISOString() })
@@ -250,6 +267,10 @@ router.post('/doku', async (req: Request, res: Response): Promise<any> => {
                 let responseBody = '';
 
                 try {
+                    const safeCheck = await validateSafeWebhookUrl(targetUrl);
+                    if (!safeCheck.valid) {
+                        throw new Error(`Blocked unsafe webhook URL: ${safeCheck.reason}`);
+                    }
                     const axios = require('axios');
                     const forwardRes = await axios.post(targetUrl, forwardPayload, { timeout: 10000 });
                     responseStatus = forwardRes.status;
@@ -336,6 +357,11 @@ router.post('/resend/:transactionId', async (req: Request, res: Response): Promi
 
         if (!targetUrl) {
             return res.status(400).json({ error: 'No webhook URL configured for this merchant' });
+        }
+
+        const safeCheck = await validateSafeWebhookUrl(targetUrl);
+        if (!safeCheck.valid) {
+            return res.status(400).json({ error: `URL webhook ditolak: ${safeCheck.reason}` });
         }
 
         const forwardPayload = {
