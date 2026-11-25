@@ -63,13 +63,8 @@ export class DokuProvider implements IPaymentProvider {
             const orderId = `KP-${merchantCode}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
             const isSandbox = (request as any).isSandbox || false;
 
-            // 1. Get B2B token from manager
-            const accessToken = await DokuTokenManager.getB2BToken();
-
-            // 2. Prepare SNAP QRIS MPM Generate Request
+            // 1. Prepare SNAP QRIS MPM Generate Request
             const endpointPath = '/snap-adapter/b2b/v1.0/qr/qr-mpm-generate';
-            const timestamp = DokuSecurity.getLocalTimestamp();
-            const externalId = `EXT-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
             const validityPeriod = DokuSecurity.formatExpiryTimestamp(60);
             const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
 
@@ -88,32 +83,46 @@ export class DokuProvider implements IPaymentProvider {
                 }
             };
 
-            const signature = DokuSecurity.generateSymmetricSignature(
-                'POST',
-                endpointPath,
-                accessToken,
-                requestBody,
-                timestamp,
-                this.getClientSecret()
-            );
-
             const baseUrl = DokuTokenManager.getBaseUrl();
-            const response = await fetch(`${baseUrl}${endpointPath}`, {
-                method: 'POST',
-                headers: {
-                    'X-PARTNER-ID': this.getClientId(),
-                    'X-EXTERNAL-ID': externalId,
-                    'X-TIMESTAMP': timestamp,
-                    'X-SIGNATURE': signature,
-                    'Authorization': `Bearer ${accessToken}`,
-                    'CHANNEL-ID': 'H2H',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(requestBody)
-            });
+            const sendQrRequest = async (forceRefreshToken: boolean) => {
+                const accessToken = await DokuTokenManager.getB2BToken(forceRefreshToken);
+                const timestamp = DokuSecurity.getLocalTimestamp();
+                const externalId = `EXT-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+                const signature = DokuSecurity.generateSymmetricSignature(
+                    'POST',
+                    endpointPath,
+                    accessToken,
+                    requestBody,
+                    timestamp,
+                    this.getClientSecret()
+                );
+
+                return fetch(`${baseUrl}${endpointPath}`, {
+                    method: 'POST',
+                    headers: {
+                        'X-PARTNER-ID': this.getClientId(),
+                        'X-EXTERNAL-ID': externalId,
+                        'X-TIMESTAMP': timestamp,
+                        'X-SIGNATURE': signature,
+                        'Authorization': `Bearer ${accessToken}`,
+                        'CHANNEL-ID': 'H2H',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+            };
+
+            // 2. Execute QRIS generation with automatic 1x token refresh retry on 401 / 4014701
+            let response = await sendQrRequest(false);
+            let errText = !response.ok ? await response.text() : '';
+
+            if (response.status === 401 || errText.includes('4014701')) {
+                console.warn('[DokuProvider] B2B Access Token rejected (401), refreshing token and retrying once...');
+                response = await sendQrRequest(true);
+                errText = !response.ok ? await response.text() : '';
+            }
 
             if (!response.ok) {
-                const errText = await response.text();
                 throw new Error(`DOKU API Error [HTTP ${response.status}]: ${errText}`);
             }
 
