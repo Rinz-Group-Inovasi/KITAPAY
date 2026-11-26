@@ -25,12 +25,12 @@ export class KitaPayProvider implements IPaymentProvider {
                 }
             }
 
-            // Fee calculation (Upstream: Rp 1.110 untuk <= 100k, 0.7% untuk > 100k)
+            // Fee calculation (Upstream aktual: Rp 555 [Rp 500 + PPN 11%] untuk <= 100k, 0.7% untuk > 100k)
             let baseFee = 0;
             let totalDeduction = 0;
 
             if (inputAmount <= 100000) {
-                baseFee = 1110;
+                baseFee = 555;
                 totalDeduction = 1500;
             } else {
                 baseFee = Math.round(grossAmount * 0.007);

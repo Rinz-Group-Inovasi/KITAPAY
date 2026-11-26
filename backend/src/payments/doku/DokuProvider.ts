@@ -37,13 +37,13 @@ export class DokuProvider implements IPaymentProvider {
                 }
             }
 
-            // Fee calculation (Upstream DOKU: Rp 1.110 [Rp 1.000 + PPN 11%] untuk <= 100k, 0.7% untuk > 100k)
+            // Fee calculation (Upstream DOKU aktual: Rp 555 [Rp 500 + PPN 11%] untuk <= 100k, 0.7% untuk > 100k)
             let baseFee = 0;
             let totalDeduction = 0;
 
             if (inputAmount <= 100000) {
-                // Tier 1: Rp 1 - Rp 100.000 (Fee Rp 1.500 flat, Modal DOKU Rp 1.110, Margin Rp 390)
-                baseFee = 1110;
+                // Tier 1: Rp 1 - Rp 100.000 (Fee Rp 1.500 flat, Modal DOKU Rp 555, Margin Rp 945)
+                baseFee = 555;
                 totalDeduction = 1500;
             } else {
                 // Tier 2: > Rp 100.000 (Fee 1.5%, Modal DOKU 0.7%, Margin 0.8%)

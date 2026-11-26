@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { Users, FileText, CheckCircle, WarningCircle, ShieldCheck, SignOut, Clock, Headset } from '@phosphor-icons/react';
+import { Users, FileText, CheckCircle, WarningCircle, ShieldCheck, SignOut, Clock, Headset, ChartLineUp } from '@phosphor-icons/react';
 import Link from 'next/link';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -101,16 +101,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             Permintaan Penarikan
           </Link>
           {role === 'SUPER_ADMIN' && (
-            <Link 
-              href="/admin/audit" 
-              className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all text-sm mt-4 border border-purple-200 bg-purple-50",
-                pathname === '/admin/audit' ? "bg-purple-900 text-white shadow-sm border-transparent" : "text-purple-700 hover:bg-purple-100 hover:text-purple-900"
-              )}
-            >
-              <ShieldCheck weight={pathname === '/admin/audit' ? "fill" : "regular"} className="w-5 h-5" />
-              Audit Penarikan
-            </Link>
+            <>
+              <Link 
+                href="/admin/finance" 
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all text-sm mt-4 border border-emerald-200 bg-emerald-50",
+                  pathname === '/admin/finance' ? "bg-emerald-900 text-white shadow-sm border-transparent" : "text-emerald-700 hover:bg-emerald-100 hover:text-emerald-900"
+                )}
+              >
+                <ChartLineUp weight={pathname === '/admin/finance' ? "fill" : "regular"} className="w-5 h-5" />
+                Keuangan & Profit
+              </Link>
+              <Link 
+                href="/admin/audit" 
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all text-sm mt-1 border border-purple-200 bg-purple-50",
+                  pathname === '/admin/audit' ? "bg-purple-900 text-white shadow-sm border-transparent" : "text-purple-700 hover:bg-purple-100 hover:text-purple-900"
+                )}
+              >
+                <ShieldCheck weight={pathname === '/admin/audit' ? "fill" : "regular"} className="w-5 h-5" />
+                Audit Penarikan
+              </Link>
+            </>
           )}
           <Link 
             href="/admin/support" 

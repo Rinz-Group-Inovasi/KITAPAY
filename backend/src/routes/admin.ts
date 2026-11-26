@@ -495,4 +495,189 @@ router.post('/requests/:id/reject', async (req, res) => {
     }
 });
 
+// 5. Super Admin Financial & Profit Analytics
+router.get('/finance', async (req, res) => {
+    try {
+        const [{ data: txs, error: txErr }, { data: wds, error: wdErr }, { data: merchants, error: mErr }] = await Promise.all([
+            supabaseAdmin
+                .from('transactions')
+                .select('merchant_id, amount, base_fee, kitapay_fee, total_deduction, net_amount, status, is_sandbox, created_at')
+                .eq('is_sandbox', false)
+                .in('status', ['PAID', 'COMPLETED'])
+                .order('created_at', { ascending: true }),
+            supabaseAdmin
+                .from('merchant_requests')
+                .select('merchant_id, status, payload, created_at')
+                .eq('request_type', 'WITHDRAWAL'),
+            supabaseAdmin
+                .from('merchants')
+                .select('id, business_name, email, verification_status, available_balance, pending_balance')
+        ]);
+
+        if (txErr) throw txErr;
+        if (wdErr) throw wdErr;
+        if (mErr) throw mErr;
+
+        const bannedIds = new Set(
+            (merchants || [])
+                .filter((m: any) => m.verification_status === 'BANNED' || m.verification_status === 'SUSPENDED')
+                .map((m: any) => m.id)
+        );
+
+        const toWibDate = (iso: string) => new Date(new Date(iso).getTime() + 7 * 3600 * 1000).toISOString().slice(0, 10);
+        const nowWib = new Date(Date.now() + 7 * 3600 * 1000);
+        const todayStr = nowWib.toISOString().slice(0, 10);
+        const yesterdayStr = new Date(nowWib.getTime() - 86400000).toISOString().slice(0, 10);
+        const thisMonthStr = todayStr.slice(0, 7);
+
+        const emptyBucket = () => ({
+            count: 0,
+            gross: 0,
+            merchantNet: 0,
+            dokuFee: 0,
+            qrisProfit: 0,
+            withdrawalFees: 0,
+            totalProfit: 0
+        });
+
+        const summary = {
+            allTime: emptyBucket(),
+            thisMonth: emptyBucket(),
+            today: emptyBucket(),
+            yesterday: emptyBucket()
+        };
+
+        const dailyMap = new Map<string, ReturnType<typeof emptyBucket> & { date: string }>();
+        const monthlyMap = new Map<string, ReturnType<typeof emptyBucket> & { month: string }>();
+        const merchantStats = new Map<string, { txCount: number; gross: number; qrisProfit: number }>();
+
+        const addTxToBucket = (b: ReturnType<typeof emptyBucket>, t: any, dokuFee: number, kpProfit: number) => {
+            b.count += 1;
+            b.gross += Number(t.amount || 0);
+            b.merchantNet += Number(t.net_amount || 0);
+            b.dokuFee += dokuFee;
+            b.qrisProfit += kpProfit;
+            b.totalProfit += kpProfit;
+        };
+
+        for (const t of (txs || [])) {
+            if (bannedIds.has(t.merchant_id)) continue;
+
+            const wibDay = toWibDate(t.created_at);
+            const wibMonth = wibDay.slice(0, 7);
+            const gross = Number(t.amount || 0);
+            const net = Number(t.net_amount || 0);
+            const ded = Number(t.total_deduction || Math.max(0, gross - net));
+            // For Nov 2026+, actual DOKU fee is Rp 555 (<= 100k) or 0.7% (> 100k); use stored base_fee if pre-Nov
+            const dokuFee = wibDay >= '2026-11-01'
+                ? (gross > 100000 ? Math.round(gross * 0.007) : Math.min(555, ded))
+                : Number(t.base_fee || 0);
+            const kpProfit = Math.max(0, ded - dokuFee);
+
+            addTxToBucket(summary.allTime, t, dokuFee, kpProfit);
+            if (wibMonth === thisMonthStr) addTxToBucket(summary.thisMonth, t, dokuFee, kpProfit);
+            if (wibDay === todayStr) addTxToBucket(summary.today, t, dokuFee, kpProfit);
+            if (wibDay === yesterdayStr) addTxToBucket(summary.yesterday, t, dokuFee, kpProfit);
+
+            if (!dailyMap.has(wibDay)) dailyMap.set(wibDay, { date: wibDay, ...emptyBucket() });
+            addTxToBucket(dailyMap.get(wibDay)!, t, dokuFee, kpProfit);
+
+            if (!monthlyMap.has(wibMonth)) monthlyMap.set(wibMonth, { month: wibMonth, ...emptyBucket() });
+            addTxToBucket(monthlyMap.get(wibMonth)!, t, dokuFee, kpProfit);
+
+            if (!merchantStats.has(t.merchant_id)) merchantStats.set(t.merchant_id, { txCount: 0, gross: 0, qrisProfit: 0 });
+            const ms = merchantStats.get(t.merchant_id)!;
+            ms.txCount += 1;
+            ms.gross += gross;
+            ms.qrisProfit += kpProfit;
+        }
+
+        let pendingWithdrawalsAmount = 0;
+        let pendingWithdrawalsCount = 0;
+        for (const w of (wds || [])) {
+            if (bannedIds.has(w.merchant_id)) continue;
+            if (w.status === 'PENDING') {
+                pendingWithdrawalsCount += 1;
+                pendingWithdrawalsAmount += Number(w.payload?.amount || 0);
+            } else if (w.status === 'APPROVED') {
+                const fee = Number(w.payload?.fee || 0);
+                if (fee > 0) {
+                    const wibDay = toWibDate(w.created_at);
+                    const wibMonth = wibDay.slice(0, 7);
+                    summary.allTime.withdrawalFees += fee;
+                    summary.allTime.totalProfit += fee;
+                    if (wibMonth === thisMonthStr) {
+                        summary.thisMonth.withdrawalFees += fee;
+                        summary.thisMonth.totalProfit += fee;
+                    }
+                    if (wibDay === todayStr) {
+                        summary.today.withdrawalFees += fee;
+                        summary.today.totalProfit += fee;
+                    }
+                    if (wibDay === yesterdayStr) {
+                        summary.yesterday.withdrawalFees += fee;
+                        summary.yesterday.totalProfit += fee;
+                    }
+                    if (!dailyMap.has(wibDay)) dailyMap.set(wibDay, { date: wibDay, ...emptyBucket() });
+                    dailyMap.get(wibDay)!.withdrawalFees += fee;
+                    dailyMap.get(wibDay)!.totalProfit += fee;
+
+                    if (!monthlyMap.has(wibMonth)) monthlyMap.set(wibMonth, { month: wibMonth, ...emptyBucket() });
+                    monthlyMap.get(wibMonth)!.withdrawalFees += fee;
+                    monthlyMap.get(wibMonth)!.totalProfit += fee;
+                }
+            }
+        }
+
+        let totalMerchantAvailable = 0;
+        let totalMerchantPending = 0;
+        const merchantBreakdown = (merchants || [])
+            .filter((m: any) => !bannedIds.has(m.id))
+            .map((m: any) => {
+                const avail = Number(m.available_balance || 0);
+                const pend = Number(m.pending_balance || 0);
+                totalMerchantAvailable += avail;
+                totalMerchantPending += pend;
+                const st = merchantStats.get(m.id) || { txCount: 0, gross: 0, qrisProfit: 0 };
+                return {
+                    id: m.id,
+                    businessName: m.business_name,
+                    email: m.email,
+                    verificationStatus: m.verification_status,
+                    availableBalance: avail,
+                    pendingBalance: pend,
+                    txCount: st.txCount,
+                    gross: st.gross,
+                    qrisProfit: st.qrisProfit
+                };
+            })
+            .filter((m: any) => m.txCount > 0 || m.availableBalance > 0 || m.pendingBalance > 0)
+            .sort((a: any, b: any) => b.gross - a.gross);
+
+        const dailySeries = Array.from(dailyMap.values())
+            .sort((a, b) => a.date.localeCompare(b.date))
+            .slice(-30);
+
+        const monthlySeries = Array.from(monthlyMap.values())
+            .sort((a, b) => a.month.localeCompare(b.month));
+
+        return res.status(200).json({
+            summary,
+            escrow: {
+                totalMerchantAvailable,
+                totalMerchantPending,
+                pendingWithdrawalsAmount,
+                pendingWithdrawalsCount,
+                totalObligation: totalMerchantAvailable + totalMerchantPending + pendingWithdrawalsAmount
+            },
+            dailySeries,
+            monthlySeries,
+            merchantBreakdown
+        });
+    } catch (err: any) {
+        console.error('Admin finance error:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 export default router;
