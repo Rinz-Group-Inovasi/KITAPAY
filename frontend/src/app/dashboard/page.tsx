@@ -239,8 +239,8 @@ export default function DashboardPage() {
           </div>
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-bold text-slate-800 mb-1">Bebankan Biaya ke Pelanggan</h3>
-              <p className="text-xs text-slate-500">Jika aktif, pelanggan akan menanggung biaya MDR QRIS (nominal yang Anda terima akan utuh).</p>
+              <h3 className="text-sm font-bold text-slate-800 mb-1">Bebankan Biaya Layanan ke Pelanggan</h3>
+              <p className="text-xs text-slate-500">Jika aktif, pelanggan akan menanggung Biaya Layanan Platform (nominal yang Anda terima akan utuh).</p>
             </div>
             <button 
               onClick={handleToggleFeeSetting}
