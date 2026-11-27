@@ -60,13 +60,18 @@ interface TierData {
     used: number;
     remaining: number;
   };
+  jagoQuota?: {
+    max: number;
+    used: number;
+    remaining: number;
+  };
 }
 
-const TIER_COLORS: Record<string, { bg: string; text: string; ring: string, icon: any, iconColor: string, iconWeight: 'fill' | 'duotone' }> = {
-  'KitaPay Rookie': { bg: 'bg-amber-100', text: 'text-amber-800', ring: 'ring-amber-200', icon: ShieldKIcon, iconColor: 'text-amber-600', iconWeight: 'duotone' },
-  'KitaPay Silver': { bg: 'bg-zinc-100', text: 'text-zinc-600', ring: 'ring-zinc-300', icon: ShieldKIcon, iconColor: 'text-zinc-500', iconWeight: 'duotone' },
-  'KitaPay Gold': { bg: 'bg-yellow-100', text: 'text-yellow-700', ring: 'ring-yellow-300', icon: ShieldKIcon, iconColor: 'text-yellow-500', iconWeight: 'duotone' },
-  'KitaPay Platinum': { bg: 'bg-indigo-100', text: 'text-indigo-700', ring: 'ring-indigo-300', icon: ShieldKIcon, iconColor: 'text-indigo-500', iconWeight: 'fill' },
+const TIER_COLORS: Record<string, { bg: string; barBg: string; text: string; ring: string, icon: any, iconColor: string, iconWeight: 'fill' | 'duotone' }> = {
+  'KitaPay Rookie': { bg: 'bg-amber-100', barBg: 'bg-amber-500', text: 'text-amber-800', ring: 'ring-amber-200', icon: ShieldKIcon, iconColor: 'text-amber-600', iconWeight: 'duotone' },
+  'KitaPay Silver': { bg: 'bg-zinc-100', barBg: 'bg-zinc-500', text: 'text-zinc-600', ring: 'ring-zinc-300', icon: ShieldKIcon, iconColor: 'text-zinc-500', iconWeight: 'duotone' },
+  'KitaPay Gold': { bg: 'bg-yellow-100', barBg: 'bg-yellow-500', text: 'text-yellow-700', ring: 'ring-yellow-300', icon: ShieldKIcon, iconColor: 'text-yellow-500', iconWeight: 'duotone' },
+  'KitaPay Platinum': { bg: 'bg-indigo-100', barBg: 'bg-indigo-500', text: 'text-indigo-700', ring: 'ring-indigo-300', icon: ShieldKIcon, iconColor: 'text-indigo-500', iconWeight: 'fill' },
 };
 
 export default function TierPage() {
@@ -111,7 +116,7 @@ export default function TierPage() {
       <div>
          <h1 className="text-2xl font-bold text-slate-900">Level Merchant</h1>
          <p className="text-sm text-slate-500 mt-1">
-            Program apresiasi spesial bagi merchant setia KitaPay. Raih kuota penarikan instan gratis tanpa batas!
+            Program apresiasi spesial bagi merchant setia KitaPay. Kumpulkan transaksi untuk naik level &amp; raih kuota penarikan instan gratis tiap bulan!
          </p>
       </div>
 
@@ -143,16 +148,21 @@ export default function TierPage() {
 
                {data.nextTierThreshold > 0 ? (
                   <>
-                     <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                     <div className="w-full h-3.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/70">
                         <div 
-                           className={cn("h-full rounded-full transition-all duration-1000", currentTheme.bg.replace('100', '400'))}
-                           style={{ width: `${progressPercent}%` }}
+                           className={cn("h-full rounded-full transition-all duration-700", currentTheme.barBg)}
+                           style={{ width: `${Math.max(progressPercent > 0 ? 3 : 0, progressPercent)}%` }}
                         />
                      </div>
-                     <p className="text-xs font-semibold text-slate-500 mt-3 flex items-center gap-1.5">
-                        <Target weight="fill" className="w-4 h-4 text-slate-400" />
-                        Tinggal {data.nextTierThreshold - data.currentMonthTransactions} transaksi lagi untuk naik level bulan ini!
-                     </p>
+                     <div className="flex items-center justify-between gap-2 mt-3">
+                        <p className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
+                           <Target weight="fill" className="w-4 h-4 text-slate-400 shrink-0" />
+                           <span>Tinggal {Math.max(0, data.nextTierThreshold - data.currentMonthTransactions).toLocaleString('id-ID')} transaksi lagi untuk naik level bulan ini!</span>
+                        </p>
+                        <span className={cn("text-xs font-black px-2 py-0.5 rounded-md shrink-0", currentTheme.bg, currentTheme.text)}>
+                           {progressPercent}%
+                        </span>
+                     </div>
                   </>
                ) : (
                   <div className="w-full h-3 bg-indigo-100 rounded-full overflow-hidden">
@@ -171,27 +181,39 @@ export default function TierPage() {
                <p className="text-sm text-slate-600 leading-relaxed">
                   Sebagai merchant <strong className={currentTheme.text}>{data.tier}</strong>, Anda mendapatkan kuota gratis biaya admin (Rp 2.000) untuk Penarikan Instan ke <strong>semua Bank</strong>!
                </p>
-                <p className="mt-4 text-xs text-slate-500 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                  *Khusus penarikan ke Bank Jago, Anda mendapatkan kuota gratis tanpa batas.
+                <p className="mt-3 text-xs text-slate-600 bg-white/80 p-3 rounded-xl border border-slate-200/80 leading-relaxed">
+                  *Khusus penarikan ke <strong>Bank Jago</strong>, Anda mendapatkan kuota gratis tambahan <strong>3x per bulan</strong> (selanjutnya Rp 2.000/penarikan).
                 </p>
             </div>
 
-            <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm mt-2">
-               <div className="flex items-center justify-between mb-2">
-                  <span className="font-bold text-slate-700">Sisa Kuota Gratis</span>
-                  <span className="text-xs font-bold text-slate-400">{data.freeQuota.used} / {data.freeQuota.max} Dipakai</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+               <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
+                  <div className="flex items-center justify-between mb-1.5">
+                     <span className="font-bold text-xs text-slate-700">Kuota Semua Bank</span>
+                     <span className="text-[11px] font-bold text-slate-400">{data.freeQuota.used}/{data.freeQuota.max}</span>
+                  </div>
+                  <div className="flex items-end gap-1.5">
+                     <span className="text-3xl font-black text-[#00DDFD]">{data.freeQuota.remaining}x</span>
+                     <span className="text-xs font-semibold text-slate-500 mb-1">gratis</span>
+                  </div>
                </div>
-               
-               <div className="flex items-end gap-2">
-                  <span className="text-4xl font-black text-[#00DDFD]">{data.freeQuota.remaining}x</span>
-                  <span className="text-sm font-semibold text-slate-500 mb-1">penarikan gratis</span>
+
+               <div className="bg-white rounded-2xl p-4 border border-emerald-100 shadow-sm">
+                  <div className="flex items-center justify-between mb-1.5">
+                     <span className="font-bold text-xs text-slate-700">Khusus Bank Jago</span>
+                     <span className="text-[11px] font-bold text-slate-400">{data.jagoQuota?.used ?? 0}/{data.jagoQuota?.max ?? 3}</span>
+                  </div>
+                  <div className="flex items-end gap-1.5">
+                     <span className="text-3xl font-black text-emerald-600">{data.jagoQuota?.remaining ?? 3}x</span>
+                     <span className="text-xs font-semibold text-slate-500 mb-1">gratis/bln</span>
+                  </div>
                </div>
-               
-               <Link href="/dashboard/withdraw" className="mt-4 flex items-center justify-center gap-2 w-full py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-colors">
-                  Tarik Dana Sekarang
-                  <CaretRight weight="bold" />
-               </Link>
             </div>
+               
+            <Link href="/dashboard/withdraw" className="mt-4 flex items-center justify-center gap-2 w-full py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-colors">
+               Tarik Dana Sekarang
+               <CaretRight weight="bold" />
+            </Link>
          </div>
       </div>
 
@@ -208,7 +230,7 @@ export default function TierPage() {
                   <ShieldKIcon weight="duotone" className="w-12 h-12 text-amber-600 drop-shadow-sm" />
                   <div>
                      <h4 className="font-bold text-amber-900">KitaPay Rookie</h4>
-                     <p className="text-xs text-amber-700 font-medium mt-0.5">&lt; 500 Transaksi / bulan</p>
+                     <p className="text-xs text-amber-700 font-medium mt-0.5">&lt; 350 Transaksi / bulan</p>
                   </div>
                </div>
                <div className="text-right">
@@ -223,7 +245,7 @@ export default function TierPage() {
                   <ShieldKIcon weight="duotone" className="w-12 h-12 text-zinc-500 drop-shadow-sm" />
                   <div>
                      <h4 className="font-bold text-slate-800">KitaPay Silver</h4>
-                     <p className="text-xs text-slate-500 font-medium mt-0.5">500 - 999 Transaksi / bulan</p>
+                     <p className="text-xs text-slate-500 font-medium mt-0.5">350 - 699 Transaksi / bulan</p>
                   </div>
                </div>
                <div className="text-right">
@@ -238,7 +260,7 @@ export default function TierPage() {
                   <ShieldKIcon weight="duotone" className="w-12 h-12 text-yellow-500 drop-shadow-sm" />
                   <div>
                      <h4 className="font-bold text-yellow-900">KitaPay Gold</h4>
-                     <p className="text-xs text-yellow-700 font-medium mt-0.5">1.000 - 1.999 Transaksi / bulan</p>
+                     <p className="text-xs text-yellow-700 font-medium mt-0.5">700 - 1.399 Transaksi / bulan</p>
                   </div>
                </div>
                <div className="text-right">
@@ -254,7 +276,7 @@ export default function TierPage() {
                   <ShieldKIcon weight="fill" className="w-12 h-12 text-indigo-500 drop-shadow-md" />
                   <div>
                      <h4 className="font-bold text-indigo-900">KitaPay Platinum</h4>
-                     <p className="text-xs text-indigo-700 font-medium mt-0.5">&ge; 2.000 Transaksi / bulan</p>
+                     <p className="text-xs text-indigo-700 font-medium mt-0.5">&ge; 1.400 Transaksi / bulan</p>
                   </div>
                </div>
                <div className="text-right relative">

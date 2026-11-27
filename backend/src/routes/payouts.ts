@@ -100,12 +100,17 @@ router.post('/request', async (req: Request, res: Response): Promise<any> => {
                 .eq('request_type', 'WITHDRAWAL')
                 .gte('created_at', startOfMonth);
 
-            if (bankCode === 'JAGO' || bankCode === 'ARTOS') {
+            const isJagoCode = (code?: string) => {
+                const upper = (code || '').toUpperCase();
+                return upper.includes('JAGO') || upper.includes('ARTOS');
+            };
+
+            if (isJagoCode(bankCode)) {
                 let usedJagoQuota = 0;
                 if (requests) {
                     usedJagoQuota = requests.filter(req => {
                         const p = req.payload as any;
-                        return p.payoutType === 'INSTANT_PAID' && p.fee === 0 && (p.bankCode === 'JAGO' || p.bankCode === 'ARTOS');
+                        return p.payoutType === 'INSTANT_PAID' && p.fee === 0 && isJagoCode(p.bankCode);
                     }).length;
                 }
 
@@ -127,15 +132,15 @@ router.post('/request', async (req: Request, res: Response): Promise<any> => {
                     
                 const c = txCount || 0;
                 let maxQuota = 1; // Rookie
-                if (c >= 2000) maxQuota = 15; // Platinum
-                else if (c >= 1000) maxQuota = 10; // Gold
-                else if (c >= 500) maxQuota = 5; // Silver
+                if (c >= 1400) maxQuota = 15; // Platinum
+                else if (c >= 700) maxQuota = 10; // Gold
+                else if (c >= 350) maxQuota = 5; // Silver
 
                 let usedQuota = 0;
                 if (requests) {
                     usedQuota = requests.filter(req => {
                         const p = req.payload as any;
-                        return p.payoutType === 'INSTANT_PAID' && p.fee === 0 && p.bankCode !== 'JAGO' && p.bankCode !== 'ARTOS';
+                        return p.payoutType === 'INSTANT_PAID' && p.fee === 0 && !isJagoCode(p.bankCode);
                     }).length;
                 }
 

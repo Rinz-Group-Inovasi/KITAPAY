@@ -45,25 +45,25 @@ router.get('/:merchantId', async (req: Request, res: Response): Promise<any> => 
         let tier = 'KitaPay Rookie';
         let maxQuota = 1;
 
-        if (prevCount >= 2000) {
+        if (prevCount >= 1400) {
             tier = 'KitaPay Platinum';
             maxQuota = 15;
-        } else if (prevCount >= 1000) {
+        } else if (prevCount >= 700) {
             tier = 'KitaPay Gold';
             maxQuota = 10;
-        } else if (prevCount >= 500) {
+        } else if (prevCount >= 350) {
             tier = 'KitaPay Silver';
             maxQuota = 5;
         }
         
         // Determine Progress Threshold (based on current month)
-        let nextTierThreshold = 500;
-        if (currentCount >= 2000) {
+        let nextTierThreshold = 350;
+        if (currentCount >= 1400) {
             nextTierThreshold = 0; // already reached max tier for next month
-        } else if (currentCount >= 1000) {
-            nextTierThreshold = 2000;
-        } else if (currentCount >= 500) {
-            nextTierThreshold = 1000;
+        } else if (currentCount >= 700) {
+            nextTierThreshold = 1400;
+        } else if (currentCount >= 350) {
+            nextTierThreshold = 700;
         }
 
         // 3. Count used quotas for all banks this month
@@ -75,18 +75,22 @@ router.get('/:merchantId', async (req: Request, res: Response): Promise<any> => 
             .eq('request_type', 'WITHDRAWAL')
             .gte('created_at', startOfCurrentMonth);
 
+        const isJagoCode = (code?: string) => {
+            const upper = (code || '').toUpperCase();
+            return upper.includes('JAGO') || upper.includes('ARTOS');
+        };
+
         let usedQuota = 0;
         let usedJagoQuota = 0;
         if (!reqError && requests) {
             usedQuota = requests.filter(req => {
                 const payload = req.payload as any;
-                // Check if it was instant and had 0 fee
-                return payload.payoutType === 'INSTANT_PAID' && payload.fee === 0 && payload.bankCode !== 'JAGO' && payload.bankCode !== 'ARTOS';
+                return payload.payoutType === 'INSTANT_PAID' && payload.fee === 0 && !isJagoCode(payload.bankCode);
             }).length;
 
             usedJagoQuota = requests.filter(req => {
                 const payload = req.payload as any;
-                return payload.payoutType === 'INSTANT_PAID' && payload.fee === 0 && (payload.bankCode === 'JAGO' || payload.bankCode === 'ARTOS');
+                return payload.payoutType === 'INSTANT_PAID' && payload.fee === 0 && isJagoCode(payload.bankCode);
             }).length;
         }
 

@@ -414,9 +414,12 @@ export default function WithdrawPage() {
                     placeholder="Contoh: 50.000" 
                     className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:border-[#00DDFD] focus:ring-1 focus:ring-[#00DDFD] text-black font-semibold bg-white placeholder-slate-500" 
                   />
-                  {payoutType === 'INSTANT_PAID' && (
+                  {payoutType === 'INSTANT_PAID' && (() => {
+                    const bankUpper = (selectedAccount?.bankName || '').toUpperCase();
+                    const isJago = bankUpper.includes('JAGO') || bankUpper.includes('ARTOS');
+                    return (
                     <div className="mt-2 text-xs text-slate-600">
-                      {selectedAccount?.bankName === 'JAGO' || selectedAccount?.bankName === 'ARTOS' ? (
+                      {isJago ? (
                         (tierData?.jagoQuota?.remaining ?? 3) > 0 ? (
                           <div className="bg-emerald-50 text-emerald-700 p-2.5 rounded-lg font-bold flex items-center gap-1.5 mb-2 border border-emerald-200">
                             <Lightning weight="fill" className="text-emerald-500" />
@@ -435,7 +438,6 @@ export default function WithdrawPage() {
                       )}
                       
                       {Number(amount) > 0 && (() => {
-                        const isJago = selectedAccount?.bankName === 'JAGO' || selectedAccount?.bankName === 'ARTOS';
                         const feeAmt = isJago 
                           ? ((tierData?.jagoQuota?.remaining ?? 3) > 0 ? 0 : 2000)
                           : ((tierData?.freeQuota?.remaining ?? 0) > 0 ? 0 : 2000);
@@ -444,7 +446,8 @@ export default function WithdrawPage() {
                         );
                       })()}
                     </div>
-                  )}
+                    );
+                  })()}
                   {Number(amount) > balance && (
                     <p className="text-xs text-red-600 mt-1 font-semibold">Nominal melebihi saldo yang Anda miliki (Rp {new Intl.NumberFormat('id-ID').format(balance)})</p>
                   )}
