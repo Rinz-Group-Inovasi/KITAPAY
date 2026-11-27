@@ -41,17 +41,18 @@ router.get('/:merchantId', async (req: Request, res: Response): Promise<any> => 
         const currentCount = currentTxCount || 0;
         const prevCount = prevTxCount || 0;
 
-        // 2. Determine ACTIVE Tier & Quotas (based on previous month)
+        // 2. Determine ACTIVE Tier & Quotas (level up immediately when currentCount qualifies, or retain prevCount tier)
+        const effectiveCount = Math.max(currentCount, prevCount);
         let tier = 'KitaPay Rookie';
         let maxQuota = 1;
 
-        if (prevCount >= 1400) {
+        if (effectiveCount >= 1400) {
             tier = 'KitaPay Platinum';
             maxQuota = 15;
-        } else if (prevCount >= 700) {
+        } else if (effectiveCount >= 700) {
             tier = 'KitaPay Gold';
             maxQuota = 10;
-        } else if (prevCount >= 350) {
+        } else if (effectiveCount >= 350) {
             tier = 'KitaPay Silver';
             maxQuota = 5;
         }
